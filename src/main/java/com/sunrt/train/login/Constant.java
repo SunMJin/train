@@ -1,6 +1,6 @@
 package com.sunrt.train.login;
 
-public class API {
+public class Constant {
     public static final String popup_passport_appId = "otn";
     public static final String popup_passport_baseUrl = "https://kyfw.12306.cn/passport/";
     public static final String popup_passport_login =  popup_passport_baseUrl + "web/login";
@@ -11,4 +11,6 @@ public class API {
 
     public static final int markWidth=26;
     public static final int markHeight=26;
+    public static final int CodeHeight=188;
+    public static final int CodeWidth=300;
 }

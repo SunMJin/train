@@ -30,6 +30,11 @@ public class HttpUtils {
         httpclient=HttpClients.custom().setDefaultCookieStore(cookieStore).build();
     }
 
+    public static void clearCookies(){
+        cookieStore.clear();
+        httpclient=HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+    }
+
     public static CloseableHttpResponse getResponse() {
         return response;
     }
