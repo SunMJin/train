@@ -7,6 +7,7 @@ import java.io.Console;
 
 public class Application {
     public static void main(String[] args) {
+        System.out.println("欢迎使用12306购票系统");
         Login login=new Login();
         Captcha captcha=new Captcha();
         captcha.createPassCode();

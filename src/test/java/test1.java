@@ -2,6 +2,7 @@ import com.sunrt.train.login.Captcha;
 import com.sunrt.train.login.Login;
 
 public class test1 {
+
     public static void main(String[] args) {
         Login login=new Login();
         Captcha captcha=new Captcha();
@@ -12,4 +13,5 @@ public class test1 {
         login.setPassword(pw);
         captcha.setVisible(true);
     }
+
 }

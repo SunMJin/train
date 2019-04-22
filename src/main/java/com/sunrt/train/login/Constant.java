@@ -13,4 +13,7 @@ public class Constant {
     public static final int markHeight=26;
     public static final int CodeHeight=188;
     public static final int CodeWidth=300;
+
+    public static final String title="验证码";
+    public static final String markPath="/pic/mark.png";
 }

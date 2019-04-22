@@ -4,27 +4,27 @@ import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Captcha {
+
     private Map<JLabel,String> points=new HashMap();
     private JFrame jFrame;
-    private JLabel jLabel;
+    private JLabel codeLabel;
 
     private ImageIcon imageIcon=null;
     public Captcha(){
         try {
-            InputStream in=this.getClass().getResourceAsStream("/pic/mark.png");
+            InputStream in=this.getClass().getResourceAsStream(Constant.markPath);
             byte buf[]=new byte[in.available()];
             in.read(buf);
             imageIcon=new ImageIcon(buf);
@@ -33,7 +33,7 @@ public class Captcha {
         }
         jFrame=new JFrame();
         jFrame.setIconImage(imageIcon.getImage());
-        jFrame.setTitle("验证码");
+        jFrame.setTitle(Constant.title);
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.setLayout(null);
         jFrame.setLocationRelativeTo(null);
@@ -44,13 +44,31 @@ public class Captcha {
     public void setVisible(boolean flag){
         jFrame.setVisible(flag);
     }
+
     public ImageIcon getCode(){
         long temp = new Date().getTime();
+        ByteArrayInputStream in=null;
+        ByteArrayOutputStream baos=null;
         try {
             JSONObject json=new JSONObject(HttpUtils.Get(Constant.popup_passport_captcha + temp));
-            return new ImageIcon(Base64.decodeBase64(json.getString("image")));
+            in=new ByteArrayInputStream(Base64.decodeBase64(json.getString("image")));
+            BufferedImage src = ImageIO.read(in);
+            baos=new ByteArrayOutputStream(1024);
+            ImageIO.write(src, "JPG", baos);
+            return new ImageIcon(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            try {
+                if(in!=null){
+                    in.close();
+                }
+                if(baos!=null){
+                    baos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -124,8 +142,8 @@ public class Captcha {
     public void createPassCode(){
         ImageIcon code=getCode();
         if(code!=null){
-            jLabel=new JLabel(code);
-            jLabel.addMouseListener(new MouseListener() {
+            codeLabel=new JLabel(code);
+            codeLabel.addMouseListener(new MouseListener() {
                 public void mouseClicked(MouseEvent e) {
 
                 }
@@ -144,8 +162,8 @@ public class Captcha {
                         @Override
                         public void mousePressed(MouseEvent e) {
                             points.remove(markLabel);
-                            jLabel.remove(markLabel);
-                            jLabel.repaint();
+                            codeLabel.remove(markLabel);
+                            codeLabel.repaint();
                         }
 
                         @Override
@@ -164,8 +182,8 @@ public class Captcha {
                         }
                     });
                     points.put(markLabel,x+","+y);
-                    jLabel.add(markLabel);
-                    jLabel.repaint();
+                    codeLabel.add(markLabel);
+                    codeLabel.repaint();
                 }
 
                 public void mouseReleased(MouseEvent e) {
@@ -180,9 +198,9 @@ public class Captcha {
 
                 }
             });
-            jLabel.setSize(Constant.CodeWidth,Constant.CodeHeight);
-            jLabel.setLocation(0,0);
-            jFrame.add(jLabel);
+            codeLabel.setSize(Constant.CodeWidth,Constant.CodeHeight);
+            codeLabel.setLocation(0,0);
+            jFrame.add(codeLabel);
             jFrame.repaint();
         }
     }
@@ -215,7 +233,7 @@ public class Captcha {
 
     public void refreshPassCode(){
         HttpUtils.clearCookies();
-        jFrame.remove(jLabel);
+        jFrame.remove(codeLabel);
         points.clear();
         createPassCode();
     }

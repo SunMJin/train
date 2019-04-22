@@ -9,11 +9,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
 
-import java.io.Console;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 public class Login {
     private static String username;
@@ -84,17 +82,6 @@ public class Login {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        Login login=new Login();
-        Captcha captcha=new Captcha();
-        captcha.createPassCode();
-        String username="1036524012@qq.com";
-        login.setUsername(username);
-        char pw[]=new String("lol9403J").toCharArray();
-        login.setPassword(pw);
-        captcha.setVisible(true);
     }
 
 }
