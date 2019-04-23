@@ -32,13 +32,7 @@ public class test1 {
 
 
 
-       /* System.out.println("请选择座位类型：");
-        SeatType sts[]=SeatType.getSeatTypes();
-        for(int i=0;i<sts.length;i++){
-            System.out.println(i+":"+sts[i].desc);
-        }
-        System.out.println("请输入出行日期：（格式如：2019-01-01）");
-        String train_date=sc.nextLine();*/
+
 
 
         //System.out.println("请输入到达站名称：");
