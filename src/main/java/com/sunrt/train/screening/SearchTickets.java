@@ -1,4 +1,4 @@
-package com.sunrt.train.search;
+package com.sunrt.train.screening;
 
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -7,54 +7,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-class cR{
-    String secretStr;
-    String buttonTextInfo;
-    cP queryLeftNewDTO;
-}
-
-class cP{
-    String train_no;
-    String station_train_code;
-    String start_station_telecode;
-    String end_station_telecode;
-    String from_station_telecode;
-    String to_station_telecode;
-    String start_time;
-    String arrive_time;
-    String lishi;
-    String canWebBuy;
-    String yp_info;
-    String start_train_date;
-    String train_seat_feature;
-    String location_code;
-    String from_station_no;
-    String to_station_no;
-    String is_support_card;
-    String controlled_train_flag;
-    String gg_num;
-    String gr_num;
-    String qt_num;
-    String rw_num;
-    String rz_num;
-    String tz_num;
-    String wz_num;
-    String yb_num;
-    String yw_num;
-    String yz_num;
-    String ze_num;
-    String zy_num;
-    String swz_num;
-    String srrb_num;
-    String yp_ex;
-    String seat_types;
-    String exchange_train_flag;
-    String houbu_train_flag;
-    String houbu_seat_limit;
-    String from_station_name;
-    String to_station_name;
-}
 
 public class SearchTickets {
 
@@ -126,11 +78,5 @@ public class SearchTickets {
             return cN;
         }
         return null;
-    }
-    public static void main(String[] args) {
-        List<cR> list=search("2019-04-23","BJP","SHH","ADULT");
-        for(cR cr:list){
-            System.out.println(cr.queryLeftNewDTO.station_train_code+":"+cr.queryLeftNewDTO.yz_num);
-        }
     }
 }
