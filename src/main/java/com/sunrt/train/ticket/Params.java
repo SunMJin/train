@@ -117,12 +117,52 @@ public class Params {
         }
     }
 
+    private final static String trainTypes[]=new String[]{"GC-高铁/城际","D-动车","Z-直达","T-特快","K-快速","其他"};
 
-    private void getTrainType(){
-        /*while(true){
-            System.out.println("请选择车辆类型，用逗号分隔");
 
-        }*/
+    public static void main(String[] args) {
+        String x=getTrainType();
+        System.out.println(x);
+    }
+    private static String getTrainType(){
+        String indexStrArr[]=null;
+        while(true){
+            System.out.println("请输入一组车次类型，用逗号分隔");
+            for(int i=0;i<trainTypes.length;i++){
+                System.out.println(i+":"+trainTypes[i]);
+            }
+            String indexStr=sc.nextLine();
+            indexStrArr=indexStr.split(",");
+            boolean flag=true;
+            for(String is:indexStrArr){
+                try{
+                    int index=Integer.parseInt(is);
+                    if(index<0||index>trainTypes.length-1){
+                        flag=false;
+                        System.out.println("请输入一组有效数字");
+                        break;
+                    }
+                }catch (NumberFormatException e){
+                    flag=false;
+                    System.out.println("请输入一组有效数字");
+                }
+            }
+            if(flag){
+                break;
+            }
+        }
+
+        StringBuilder sb=new StringBuilder();
+        for(String isa_s:indexStrArr){
+            int isa=Integer.parseInt(isa_s);
+            if(isa!=trainTypes.length-1){
+                String x[]=trainTypes[isa].split("-");
+                sb.append(x[0]);
+            }else{
+                sb.append("Q");
+            }
+        }
+        return sb.toString();
     }
 
 
@@ -131,7 +171,8 @@ public class Params {
         String trainDate=getTrainDate();
         String from_sta=getStation(StaTypes.FROMSTA);
         String to_sta=getStation(StaTypes.TOSTA);
-        return new Param(st,trainDate,from_sta,to_sta,"ADULT");
+        String trainType=getTrainType();
+        return new Param(st,trainDate,from_sta,to_sta,"ADULT",trainType);
     }
 
 }

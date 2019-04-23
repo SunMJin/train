@@ -17,6 +17,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class Login {
     private static String username;
@@ -53,6 +54,15 @@ public class Login {
             return false;
         }
         return true;
+    }
+
+    public static void testmain(){
+        System.out.println("欢迎使用12306购票系统");
+        Login login=new Login();
+        Captcha.createPassCode();
+        login.setUsername("1036524012@qq.com");
+        login.setPassword("lol9403J".toCharArray());
+        Captcha.setVisible(true);
     }
 
     public static void main(){
@@ -106,7 +116,7 @@ public class Login {
                     JSONObject tkJson=new JSONObject(HttpUtils.Post(Constant.popup_passport_uamtk,Form.form().add("appid", "otn").build()));
                     if(tkJson.getInt("result_code")==0){
                         JSONObject ucJson=new JSONObject(HttpUtils.Post("https://kyfw.12306.cn/otn/uamauthclient",Form.form().add("tk", tkJson.getString("newapptk")).build()));
-                        if("0".equals(ucJson.getString("result_code"))){
+                        if(ucJson.getInt("result_code")==0){
                             BuyTicket.start(Params.getParams());
                         }
                     }

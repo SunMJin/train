@@ -4,9 +4,6 @@ import com.sunrt.train.login.Login;
 import com.sunrt.train.data.Stations;
 
 public class Application {
-
-
-
     public static void main(String[] args) {
         //初始化站点
         if(!Stations.init()){
