@@ -1,16 +1,5 @@
-import com.sunrt.train.buy.ArriveDate;
-import com.sunrt.train.buy.STUM;
-import com.sunrt.train.buy.SeatType;
 import com.sunrt.train.login.Captcha;
 import com.sunrt.train.login.Login;
-import com.sunrt.train.screening.SearchTickets;
-import com.sunrt.train.screening.Stations;
-import com.sunrt.train.screening.cP;
-import com.sunrt.train.screening.cR;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
-import java.util.Scanner;
 
 public class test1 {
 
@@ -29,11 +18,6 @@ public class test1 {
 
 
     public static void main(String[] args) {
-
-
-
-
-
 
         //System.out.println("请输入到达站名称：");
         //String to_station=sc.nextLine();
