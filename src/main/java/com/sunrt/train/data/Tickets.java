@@ -1,5 +1,6 @@
-package com.sunrt.train.screening;
+package com.sunrt.train.data;
 
+import com.sunrt.train.ticket.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -8,18 +9,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchTickets {
+public class Tickets {
 
-    public static List<cR> search(String train_date,String from_station,String to_station,String purpose_codes){
+    public static List<cR> searchTickets(Param p){
         String resultsStr=HttpUtils.Get("https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date="
-                +train_date+"&leftTicketDTO.from_station="+from_station+"&leftTicketDTO.to_station="+to_station+"&purpose_codes="+purpose_codes+"");
+                +p.trainDate+"&leftTicketDTO.from_station="+p.from_sta+"&leftTicketDTO.to_station="+p.to_sta+"&purpose_codes="+p.purpose_codes+"");
         JSONObject json_result=new JSONObject(resultsStr).getJSONObject("data");
         String flag=json_result.getString("flag");
         List<cR> cN=new ArrayList<>();
         if("1".equals(flag)){
             JSONArray cO=json_result.getJSONArray("result");
             JSONObject cQ=json_result.getJSONObject("map");
-
             for(int cM=0;cM<cO.length();cM++){
                 cR cR=new cR();
                 String cL[]=cO.get(cM).toString().split("\\|");
@@ -66,13 +66,9 @@ public class SearchTickets {
                 if (cL.length > 38) {
                     cP.houbu_seat_limit = cL[38];
                 }
-
                 cP.from_station_name = cQ.getString(cL[6]);
-
                 cP.to_station_name=cQ.getString(cL[7]);
-
                 cR.queryLeftNewDTO = cP;
-
                 cN.add(cR);
             }
             return cN;

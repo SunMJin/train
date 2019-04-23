@@ -36,7 +36,7 @@ public class test1 {
             }
         }
 
-        List<cR> list= SearchTickets.search(train_date,from_station,to_station,"ADULT");
+        List<cR> list= Tickets.search(train_date,from_station,to_station,"ADULT");
         for(cR cr:list){
             cP cp=cr.queryLeftNewDTO;
             if("Y".equals(cp.canWebBuy)){

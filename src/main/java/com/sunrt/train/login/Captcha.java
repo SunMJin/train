@@ -6,25 +6,27 @@ import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Captcha {
 
-    private Map<JLabel,String> points=new HashMap();
-    private JFrame jFrame;
-    private JLabel codeLabel;
+    private static Map<JLabel,String> points=new HashMap();
+    private static JFrame jFrame;
+    private static JLabel codeLabel;
 
-    private ImageIcon imageIcon=null;
-    public Captcha(){
+    private static ImageIcon imageIcon=null;
+    static{
         try {
-            InputStream in=this.getClass().getResourceAsStream(Constant.markPath);
+            InputStream in=Captcha.class.getResourceAsStream(Constant.markPath);
             byte buf[]=new byte[in.available()];
             in.read(buf);
             imageIcon=new ImageIcon(buf);
@@ -41,11 +43,11 @@ public class Captcha {
         addButton();
     }
 
-    public void setVisible(boolean flag){
+    public static void setVisible(boolean flag){
         jFrame.setVisible(flag);
     }
 
-    public ImageIcon getCode(){
+    public static ImageIcon getCode(){
         long temp = new Date().getTime();
         ByteArrayInputStream in=null;
         ByteArrayOutputStream baos=null;
@@ -73,7 +75,7 @@ public class Captcha {
         return null;
     }
 
-    public void addButton(){
+    public static void addButton(){
         JButton submit=new JButton("提交");
         submit.setSize(70,30);
         submit.setLocation(0,200);
@@ -82,10 +84,11 @@ public class Captcha {
             public void mouseClicked(MouseEvent e) {
 
             }
-
             @Override
             public void mousePressed(MouseEvent e) {
-                checkPassCode();
+                if(checkPassCode()){
+                    Login.loginForUam(getRandCode());
+                }
             }
 
             @Override
@@ -139,7 +142,7 @@ public class Captcha {
         jFrame.repaint();
     }
 
-    public void createPassCode(){
+    public static void createPassCode(){
         ImageIcon code=getCode();
         if(code!=null){
             codeLabel=new JLabel(code);
@@ -205,7 +208,7 @@ public class Captcha {
         }
     }
 
-    public boolean checkPassCode(){
+    public static boolean checkPassCode(){
         if(points.size()==0){
             System.out.println("请选择验证码！");
             return false;
@@ -220,9 +223,7 @@ public class Captcha {
             return false;
         }
         if("4".equalsIgnoreCase(result_code)){
-            // 登录
             jFrame.dispose();
-            Login.loginForUam(getRandCode());
             return true;
 
         }else{
@@ -231,19 +232,19 @@ public class Captcha {
         return false;
     }
 
-    public void refreshPassCode(){
+    public static void refreshPassCode(){
         HttpUtils.clearCookies();
         jFrame.remove(codeLabel);
         points.clear();
         createPassCode();
     }
 
-    public void passCodeError(){
+    public static void passCodeError(){
         System.out.println("验证码错误");
         refreshPassCode();
     }
 
-    public String getRandCode(){
+    public static String getRandCode(){
         String randCode = "";
         //遍历点位
         for (String value : points.values()) {

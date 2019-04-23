@@ -1,5 +1,9 @@
 package com.sunrt.train.login;
 
+import com.sunrt.train.data.Tickets;
+import com.sunrt.train.ticket.BuyTicket;
+import com.sunrt.train.ticket.Param;
+import com.sunrt.train.ticket.Params;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -9,6 +13,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
 
+import java.io.Console;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -28,8 +33,8 @@ public class Login {
         }
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public static void setUsername(String username) {
+        Login.username = username;
     }
     public static void setPassword(char[] password) {
         Login.password = password;
@@ -50,7 +55,33 @@ public class Login {
         return true;
     }
 
-    public static void loginForUam(String randCode){
+    public static void main(){
+        System.out.println("欢迎使用12306购票系统");
+        Login login=new Login();
+        Captcha.createPassCode();
+        Console console=System.console();
+        while(true){
+            System.out.println("用户名：");
+            String username=console.readLine();
+            if(login.unvalid(username)){
+                login.setUsername(username);
+                break;
+            }else{
+                System.out.println("用户名格式错误");
+            }
+        }
+        while(true){
+            System.out.println("密码：");
+            char pw[]=console.readPassword();
+            if(login.pwValid(pw)){
+                login.setPassword(pw);
+                Captcha.setVisible(true);
+                break;
+            }
+        }
+    }
+
+    public static boolean loginForUam(String randCode){
         List<NameValuePair> listParams= Form.form()
                 .add("username",username)
                 .add("password",new String(password))
@@ -74,14 +105,16 @@ public class Login {
                     HttpUtils.Get(location);
                     JSONObject tkJson=new JSONObject(HttpUtils.Post(Constant.popup_passport_uamtk,Form.form().add("appid", "otn").build()));
                     if(tkJson.getInt("result_code")==0){
-                        System.out.println(HttpUtils.Post("https://kyfw.12306.cn/otn/uamauthclient",Form.form().add("tk", tkJson.getString("newapptk")).build()));
-                        System.out.println(HttpUtils.Post("https://kyfw.12306.cn/otn/passengers/query", Form.form().add("pageIndex","1").add("pageSize","10").build()));
+                        JSONObject ucJson=new JSONObject(HttpUtils.Post("https://kyfw.12306.cn/otn/uamauthclient",Form.form().add("tk", tkJson.getString("newapptk")).build()));
+                        if("0".equals(ucJson.getString("result_code"))){
+                            BuyTicket.start(Params.getParams());
+                        }
                     }
                 }
             }
         }catch (Exception e){
             e.printStackTrace();
         }
+        return false;
     }
-
 }

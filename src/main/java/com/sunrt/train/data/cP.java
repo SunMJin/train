@@ -1,4 +1,4 @@
-package com.sunrt.train.screening;
+package com.sunrt.train.data;
 
 public class cP{
     public  String train_no;

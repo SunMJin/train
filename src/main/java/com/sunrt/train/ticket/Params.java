@@ -1,29 +1,60 @@
-package com.sunrt.train.buy;
+package com.sunrt.train.ticket;
 
-import com.sunrt.train.screening.Stations;
-import com.sunrt.train.screening.cP;
-import org.apache.commons.lang3.StringUtils;
+import com.sunrt.train.data.Stations;
+import com.sunrt.train.utils.DateUtils;
 
 import java.util.List;
 import java.util.Scanner;
 
-public class Buy {
-    private static Scanner sc=new Scanner(System.in);
+public class Params {
 
-    public static void sc1(){
+    private static Scanner sc;
+    enum StaTypes{
+        FROMSTA,TOSTA
+    }
+
+    static{
+        sc=new Scanner(System.in);
+    }
+    private static Stum getSeatType(){
         System.out.println("请选择座位类型：");
-        SeatType sts[]=SeatType.getSeatTypes();
+        Seats sts[]= Seats.getSeats();
         for(int i=0;i<sts.length;i++){
             System.out.println(i+":"+sts[i].desc);
         }
-        System.out.println("请输入出行日期：（格式如：2019-01-01）");
-        String train_date=sc.nextLine();
+        while(true){
+            try{
+                Integer index=Integer.parseInt(sc.nextLine());
+                if(index<0||index>sts.length-1){
+                    System.out.println("请指定一个有效的数字");
+                }else{
+                    return sts[index].stum;
+                }
+            }catch (NumberFormatException e){
+                System.out.println("请指定一个有效的数字");
+            }
+        }
     }
 
-    public static void sc(){
-        String from_station=null;
+
+    private static String getTrainDate(){
         while(true){
-            System.out.println("请输入出发站名称：");
+            System.out.println("请输入出行日期：（格式如：2019-01-01）");
+            String train_date=sc.nextLine();
+            if(DateUtils.isValidDate(train_date)){
+                return train_date;
+            }else{
+                System.out.println("日期格式错误！");
+            }
+        }
+    }
+
+    private static String getStation(StaTypes staTypes){
+        while(true){
+            if(staTypes==StaTypes.FROMSTA)
+                System.out.println("请输入出发站：");
+            else
+                System.out.println("请输入到达站：");
             List<String> list= Stations.selectStations(sc.nextLine());
             if(list.size()==1){
                 String str=list.get(0);
@@ -31,8 +62,7 @@ public class Buy {
                 System.out.println("您是要选择：【"+sta[1]+"】吗？y or n");
                 String yn=sc.nextLine();
                 if("y".equalsIgnoreCase(yn)){
-                    from_station=sta[2];
-                    break;
+                    return sta[2];
                 }
             }else if(list.size()>1){
                 System.out.println("请在下列站点中选择一个数字：");
@@ -52,27 +82,19 @@ public class Buy {
                             System.out.println("您确定选择【"+sta[1]+"】吗？ y or n");
                             String yn=sc.nextLine();
                             if("y".equalsIgnoreCase(yn)){
-                                from_station=sta[2];
+                                return sta[2];
                             }
-                            break;
                         }
                     }catch (NumberFormatException e){
-                        System.out.println("无效的输入");
+                        System.out.println("请指定一个有效的数字");
                     }
-                }
-                if(from_station!=null){
-                    break;
                 }
             }else{
                 System.out.println("没有找到此站");
             }
         }
-        System.out.println(from_station);
-        if(true){
-            return ;
-        }
     }
-    public static ArriveDate ArriveDate (String cM,String cL){
+    private static ArriveDate ArriveDate (String cM, String cL){
         cM = cM.replace(":", "");
         cL = cL.replace(":", "");
         int hour_value = Integer.parseInt(cM.substring(0, 2)) + Integer.parseInt(cL.substring(0, 2));
@@ -95,43 +117,21 @@ public class Buy {
         }
     }
 
-    public static String getSeatCountStr(STUM stum, cP cp){
-        String numStr=null;
-        switch(stum){
-            case swz:
-                numStr=cp.swz_num;
-                break;
-            case zy:
-                numStr=cp.zy_num;
-                break;
-            case ze:
-                numStr=cp.ze_num;
-                break;
-            case gr:
-                numStr=cp.gr_num;
-                break;
-            case rw:
-                numStr=cp.rw_num;
-                break;
-            case srrb:
-                numStr=cp.srrb_num;
-                break;
-            case yw:
-                numStr=cp.yw_num;
-                break;
-            case rz:
-                numStr=cp.rz_num;
-                break;
-            case yz:
-                numStr=cp.yz_num;
-                break;
-            case wz:
-                numStr=cp.wz_num;
-                break;
-        }
-        if(StringUtils.isNotEmpty(numStr)&&!"无".equals(numStr)&&!"--".equals(numStr)){
-            return numStr;
-        }
-        return null;
+
+    private void getTrainType(){
+        /*while(true){
+            System.out.println("请选择车辆类型，用逗号分隔");
+
+        }*/
     }
+
+
+    public static Param getParams() {
+        Stum st=getSeatType();
+        String trainDate=getTrainDate();
+        String from_sta=getStation(StaTypes.FROMSTA);
+        String to_sta=getStation(StaTypes.TOSTA);
+        return new Param(st,trainDate,from_sta,to_sta,"ADULT");
+    }
+
 }
