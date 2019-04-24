@@ -4,12 +4,11 @@ package com.sunrt.train.ticket;
 import com.sunrt.train.data.cP;
 import org.apache.commons.lang3.StringUtils;
 
-enum Stum {
-    swz,zy,ze,gr,rw,srrb,yw,rz,yz,wz;
-}
+
 
 public class Seats {
-    private static final String DESC[]=new String[]{"商务座","一等座","二等座","高级软卧","软卧一等卧","动卧","硬卧二等座","软座","硬座","无座"};
+
+    private static final String DESC[]=new String[]{"商务座","一等座","二等座","高级软卧","软卧一等卧","动卧","硬卧二等卧","软座","硬座","无座"};
     public Stum stum;
     public String desc;
 

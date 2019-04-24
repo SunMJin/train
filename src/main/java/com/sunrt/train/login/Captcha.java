@@ -52,7 +52,7 @@ public class Captcha {
         ByteArrayInputStream in=null;
         ByteArrayOutputStream baos=null;
         try {
-            JSONObject json=new JSONObject(HttpUtils.Get(Constant.popup_passport_captcha + temp));
+            JSONObject json=HttpUtils.Get(Constant.popup_passport_captcha + temp);
             in=new ByteArrayInputStream(Base64.decodeBase64(json.getString("image")));
             BufferedImage src = ImageIO.read(in);
             baos=new ByteArrayOutputStream(1024);
@@ -216,7 +216,7 @@ public class Captcha {
         String randCode=getRandCode();
         String result_code=null;
         try {
-            JSONObject json=new JSONObject(HttpUtils.Get(Constant.popup_passport_captcha_check+"?answer="+randCode+"&&rand=sjrand&&login_site=E"));
+            JSONObject json=HttpUtils.Get(Constant.popup_passport_captcha_check+"?answer="+randCode+"&&rand=sjrand&&login_site=E");
             result_code=json.getString("result_code");
         } catch (Exception e) {
             e.printStackTrace();

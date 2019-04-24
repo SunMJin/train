@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tickets {
-
     public static List<cR> searchTickets(Param p){
-        String resultsStr=HttpUtils.Get("https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date="
-                +p.trainDate+"&leftTicketDTO.from_station="+p.from_sta+"&leftTicketDTO.to_station="+p.to_sta+"&purpose_codes="+p.purpose_codes+"");
-        JSONObject json_result=new JSONObject(resultsStr).getJSONObject("data");
+        JSONObject json_result=HttpUtils.Get("https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date="
+                +p.trainDate+"&leftTicketDTO.from_station="+p.from_sta+"&leftTicketDTO.to_station="+p.to_sta+"&purpose_codes="+p.purpose_codes+"").getJSONObject("data");
         String flag=json_result.getString("flag");
         List<cR> cN=new ArrayList<>();
         if("1".equals(flag)){

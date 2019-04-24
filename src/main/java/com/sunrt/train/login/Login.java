@@ -1,8 +1,6 @@
 package com.sunrt.train.login;
 
-import com.sunrt.train.data.Tickets;
 import com.sunrt.train.ticket.BuyTicket;
-import com.sunrt.train.ticket.Param;
 import com.sunrt.train.ticket.Params;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,11 +15,20 @@ import java.io.Console;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 public class Login {
     private static String username;
     private static char[] password;
+
+    private final static String uamauthclient="https://kyfw.12306.cn/otn/uamauthclient";
+    private final static String userLogin="https://kyfw.12306.cn/otn/login/userLogin";
+
+
+    public static boolean checkUser(){
+        JSONObject json=HttpUtils.Post("https://kyfw.12306.cn/otn/login/checkUser", Form.form().add("_json_att", "").build());
+        boolean flag=json.getJSONObject("data").getBoolean("flag");
+        return flag;
+    }
 
     private static String cookies;
     static{
@@ -102,20 +109,19 @@ public class Login {
             HttpPost post=new HttpPost(Constant.popup_passport_login);
             post.setEntity(new UrlEncodedFormEntity(listParams));
             post.addHeader("Cookie", cookies);
-            String content= HttpUtils.PostCus(post);
-            JSONObject json=new JSONObject(content);
+            JSONObject json=HttpUtils.PostCus(post);
             System.out.println(json);
             int result_code=json.getInt("result_code");
             if(result_code==0){
-                HttpUtils.Post("https://kyfw.12306.cn/otn/login/userLogin");
+                HttpUtils.Post(userLogin);
                 CloseableHttpResponse response=HttpUtils.getResponse();
                 int StatusCode=response.getStatusLine().getStatusCode();
                 if(StatusCode==302){
                     String location=response.getFirstHeader("Location").getValue();
                     HttpUtils.Get(location);
-                    JSONObject tkJson=new JSONObject(HttpUtils.Post(Constant.popup_passport_uamtk,Form.form().add("appid", "otn").build()));
+                    JSONObject tkJson=HttpUtils.Post(Constant.popup_passport_uamtk,Form.form().add("appid", "otn").build());
                     if(tkJson.getInt("result_code")==0){
-                        JSONObject ucJson=new JSONObject(HttpUtils.Post("https://kyfw.12306.cn/otn/uamauthclient",Form.form().add("tk", tkJson.getString("newapptk")).build()));
+                        JSONObject ucJson=HttpUtils.Post(uamauthclient,Form.form().add("tk", tkJson.getString("newapptk")).build());
                         if(ucJson.getInt("result_code")==0){
                             BuyTicket.start(Params.getParams());
                         }
