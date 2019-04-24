@@ -3,6 +3,7 @@ package com.sunrt.train.ticket;
 import com.sunrt.train.data.Stations;
 import com.sunrt.train.utils.CharUtils;
 import com.sunrt.train.utils.DateUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -55,13 +56,12 @@ public class Params {
                     int index=Integer.parseInt(idx);
                     if(!(index<0||index>sts.length-1)){
                         stSbStr.append(sts[index].desc+",");
-                        //mark
                         idxList.add(sts[index].stum);
                     }
                 }catch (NumberFormatException e){}
             }
             if(idxList.size()>0){
-                Set<Stum> set=new HashSet<Stum>(idxList);
+                Set<Stum> set=new HashSet<>(idxList);
                 return set.toArray(new Stum[set.size()]);
             }
             System.out.println("请指定一个有效的数字");
@@ -93,7 +93,7 @@ public class Params {
             else
                 System.out.println("请输入到达站：");
             String line=sc.nextLine();
-            List<String> list= Stations.selectStations(line);
+            List<String> list= Stations.selectStations(line.trim());
             if(list.size()==1){
                 String str=list.get(0);
                 String sta[]=str.split("\\|");
@@ -180,18 +180,19 @@ public class Params {
                     int index=Integer.parseInt(is);
                     if(!(index<0||index>trainTypes.length-1)){
                         int isa=Integer.parseInt(is);
+
                         if(CharUtils.isLetter(trainTypes[isa].charAt(0))){
                             String x[]=trainTypes[isa].split("-");
                             sb.append(x[0]);
-                            trainTypeSbStr.append(trainTypes[isa]+",");
                         }else{
                             sb.append("Q");
                         }
+                        trainTypeSbStr.append(trainTypes[isa]+",");
                     }
                 }catch (NumberFormatException e){}
             }
             if(sb.length()>0){
-                return sb.toString();
+                return CharUtils.rmRepeated(sb.toString());
             }
             System.out.println("请输入一组有效数字");
         }
@@ -242,10 +243,10 @@ public class Params {
             System.out.println("出行日期："+trainDate);
             System.out.println("出发站："+from_sta_str);
             System.out.println("到达站："+to_sta_str);
-            if(trainTypeSbStr.length()!=0){
+            if(trainTypeSbStr!=null&&trainTypeSbStr.length()!=0){
                 System.out.println("车次类型："+trainTypeSbStr.substring(0, trainTypeSbStr.length()-1));
             }
-            if(stSbStr.length()!=0){
+            if(stSbStr!=null&&stSbStr.length()!=0){
                 System.out.println("座位类型："+stSbStr.substring(0,stSbStr.length()-1));
             }
             if(arrTime!=null){

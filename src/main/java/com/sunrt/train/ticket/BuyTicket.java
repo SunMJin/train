@@ -4,6 +4,7 @@ import com.sunrt.train.data.Tickets;
 import com.sunrt.train.data.cP;
 import com.sunrt.train.data.cR;
 import com.sunrt.train.login.Login;
+import com.sunrt.train.utils.CharUtils;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Form;
@@ -50,26 +51,47 @@ public class BuyTicket {
         }
     }
 
-    public static cR selectTicket(){
+    private static char getFirstLetter(char c){
+        if(CharUtils.isLetter(c)){
+           return c;
+        }else{
+           return 'Q';
+        }
+    }
+    public static void selectTicket(){
         //车次类型>时间
         Collections.sort(list, new Comparator<cR>() {
             @Override
             public int compare(cR c1, cR c2) {
                 String tc1=c1.queryLeftNewDTO.station_train_code;
                 String tc2=c2.queryLeftNewDTO.station_train_code;
-                char le1=tc1.charAt(0);
-                char le2=tc2.charAt(0);
+                char le1=getFirstLetter(tc1.charAt(0));
+                char le2=getFirstLetter(tc2.charAt(0));
                 int a=0;
                 int b=0;
+                if(p.trainType!=null){
+                    a=p.trainType.indexOf(le1);
+                    b=p.trainType.indexOf(le2);
+                }
+                if(a==b&&p.arrTime!=null){
+                    int hour=p.arrTime[0];
+                    int min=p.arrTime[1];
+                    String time1[]=c1.queryLeftNewDTO.arrive_time.split(":");
+                    String time2[]=c2.queryLeftNewDTO.arrive_time.split(":");
 
-                //p.trainType;
+                    int habs1=Math.abs(Integer.parseInt(time1[0])-hour);
+                    int mabs1=Math.abs(Integer.parseInt(time1[1])-min);
 
-
-
-                return 0;
+                    int habs2=Math.abs(Integer.parseInt(time2[0])-hour);
+                    int mabs2=Math.abs(Integer.parseInt(time2[1])-min);
+                    if(habs1==habs2){
+                        return mabs1-mabs2;
+                    }
+                    return habs1-habs2;
+                }
+                return a-b;
             }
         });
-        return null;
     }
 
     public JSONObject getPassengerDTOs(){
@@ -110,35 +132,36 @@ public class BuyTicket {
         while(it.hasNext()){
             cP cp=it.next().queryLeftNewDTO;
             String stacode=cp.station_train_code;
-            char fchar=stacode.charAt(0);
-            if(Character.isDigit(fchar)){
-                fchar='Q';
+            char fchar=getFirstLetter(stacode.charAt(0));
+
+            //删除无法购买的
+            if(!"Y".equals(cp.canWebBuy)){
+                it.remove();
+                continue;
             }
-            if("Y".equals(cp.canWebBuy)){
-                //车次筛选
-                if(trainType!=null&&trainType.indexOf(fchar)==-1){
+
+            //车次筛选
+            if(trainType!=null&&trainType.indexOf(fchar)==-1){
+                it.remove();
+                continue;
+            }
+            //座位类型筛选
+            Stum st[]=p.st;
+            if(st!=null){
+                boolean flag=false;
+                for(int i=0;i<st.length;i++){
+                    String count=Seats.getSeatCount(st[i],cp);
+                    if(!"0".equals(count)){
+                        flag=true;
+                        break;
+                    }
+                }
+                if(!flag){
                     it.remove();
                     continue;
-                }
-                //座位类型筛选
-                Stum st[]=p.st;
-                if(st!=null){
-                    boolean flag=false;
-                    for(int i=0;i<st.length;i++){
-                        String count=Seats.getSeatCount(st[i],cp);
-                        if(!"0".equals(count)){
-                            flag=true;
-                            break;
-                        }
-                    }
-                    if(!flag){
-                        it.remove();
-                        continue;
-                    }
                 }
             }
         }
         return list;
     }
-
 }
