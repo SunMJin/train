@@ -1,8 +1,7 @@
 import com.sunrt.train.data.Stations;
-import com.sunrt.train.login.Login;
 import com.sunrt.train.ticket.BuyTicket;
-import com.sunrt.train.ticket.Params;
-import com.sunrt.train.ticket.Seats;
+import com.sunrt.train.ticket.Param;
+import com.sunrt.train.ticket.Stum;
 
 public class test2 {
     public static void main(String[] args) {
@@ -12,7 +11,8 @@ public class test2 {
             return;
         }
         //登陆
-        Login.testmain();
+        //Login.testmain();
         //Params.getParams();
+        BuyTicket.start(new Param(null,"2019-05-02","WXH","CCT","ADULT","G",new int[]{20,32},null,"无锡","长春","dc"));
     }
 }

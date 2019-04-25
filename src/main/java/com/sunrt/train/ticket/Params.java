@@ -16,20 +16,17 @@ public class Params {
     private static StringBuilder trainTypeSbStr;
     private static StringBuilder stSbStr;
 
+    private final static String YES="Y";
+    private final static String NO="N";
     private final static String trainTypes[]=new String[]{"GC-高铁/城际","D-动车","Z-直达","T-特快","K-快速","其他"};
     enum StaTypes{
         FROMSTA,TOSTA
     }
+    enum TimeTypes{
+        STARTTIME,ARRTIME
+    }
     static{
         sc=new Scanner(System.in);
-    }
-
-
-    public static void removeDuplicate(Object []objs){
-
-        for(int i=0;i<objs.length;i++){
-
-        }
     }
 
     private static Stum[] getSeatType(){
@@ -99,7 +96,7 @@ public class Params {
                 String sta[]=str.split("\\|");
                 System.out.println("您是要选择：【"+sta[1]+"】吗？Y or N ?");
                 String yn=sc.nextLine();
-                if("y".equalsIgnoreCase(yn)){
+                if(YES.equalsIgnoreCase(yn)){
                     if(staTypes==staTypes.FROMSTA) from_sta_str=sta[1];else to_sta_str=sta[1];
                     return sta[2];
                 }
@@ -120,7 +117,7 @@ public class Params {
                             String sta[]=list.get(staIndex).split("\\|");
                             System.out.println("您确定选择【"+sta[1]+"】吗？ Y or N ?");
                             String yn=sc.nextLine();
-                            if("y".equalsIgnoreCase(yn)){
+                            if(YES.equalsIgnoreCase(yn)){
                                 if(staTypes==staTypes.FROMSTA) from_sta_str=sta[1];else to_sta_str=sta[1];
                                 return sta[2];
                             }
@@ -198,9 +195,15 @@ public class Params {
         }
     }
 
-    private static int[] getArrtime(){
+    private static int[] getTime(TimeTypes timeTypes){
+        String ttStr=null;
+        if(timeTypes==TimeTypes.STARTTIME){
+            ttStr="出发";
+        }else if(timeTypes==TimeTypes.ARRTIME){
+            ttStr="到达";
+        }
         while(true){
-            System.out.println("请输入最佳到达时间（选填），格式：[时]:[分]");
+            System.out.println("请输入最佳"+ttStr+"时间（选填），格式：[时]:[分]");
             String time=sc.nextLine();
             if(time.length()==0){
                 return null;
@@ -237,7 +240,8 @@ public class Params {
             String to_sta=getStation(StaTypes.TOSTA);
             String trainType=getTrainType();
             Stum st[]=getSeatType();
-            int arrTime[]=getArrtime();
+            int startTime[]=getTime(TimeTypes.STARTTIME);
+            int arrTime[]=getTime(TimeTypes.ARRTIME);
 
             System.out.println("请核对以下参数：");
             System.out.println("出行日期："+trainDate);
@@ -249,13 +253,16 @@ public class Params {
             if(stSbStr!=null&&stSbStr.length()!=0){
                 System.out.println("座位类型："+stSbStr.substring(0,stSbStr.length()-1));
             }
+            if(startTime!=null){
+                System.out.println("最佳出发时间："+"("+startTime[0]+":"+startTime[1]+")");
+            }
             if(arrTime!=null){
                 System.out.println("最佳到达时间："+"("+arrTime[0]+":"+arrTime[1]+")");
             }
             System.out.println("Y or N ?");
             String yn=sc.nextLine();
-            if(yn.equalsIgnoreCase("y")){
-                return new Param(st,trainDate,from_sta,to_sta,"ADULT",trainType,arrTime);
+            if(YES.equalsIgnoreCase(yn)){
+                return new Param(st,trainDate,from_sta,to_sta,"ADULT",trainType,startTime,arrTime,from_sta_str,to_sta_str,"dc");
             }
         }
     }

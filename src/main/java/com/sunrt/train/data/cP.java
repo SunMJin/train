@@ -31,6 +31,7 @@ public class cP{
     public String rw_num;
     //软座
     public String rz_num;
+    //特等座
     public String tz_num;
     //无座
     public String wz_num;

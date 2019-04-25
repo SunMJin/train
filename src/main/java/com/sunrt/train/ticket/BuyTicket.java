@@ -6,6 +6,7 @@ import com.sunrt.train.data.cR;
 import com.sunrt.train.login.Login;
 import com.sunrt.train.utils.CharUtils;
 import com.sunrt.train.utils.HttpUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Form;
 import org.json.JSONObject;
@@ -14,16 +15,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BuyTicket {
     private static Param p;
     private static List<cR>list;
+    private static cR cr;
     public static void setP(Param p) {
         BuyTicket.p = p;
     }
-
-    private final static int DC=0;
-    private final static int WC=1;
 
     private final static String submitOrderRequest="https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest";
     private final static String DCURL="https://kyfw.12306.cn/otn/confirmPassenger/initDc";
@@ -34,7 +35,7 @@ public class BuyTicket {
 
     private final static String PASSENGERURL="https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
 
-
+    private static String globalRepeatSubmitToken;
     public static void start (Param p){
         BuyTicket.p=p;
         list=Tickets.searchTickets(p);
@@ -46,8 +47,86 @@ public class BuyTicket {
         retrieve();
         //根据优先级决定购买的车次
         selectTicket();
-        if(Login.checkUser()){
 
+        //是否登录
+        if(Login.checkUser()){
+            JSONObject sorJson=submitOrderRequest();
+            boolean sorStatus=sorJson.getBoolean("status");
+            String sorData=sorJson.getString("data");
+            if(sorStatus&&"N".equals(sorData)){
+                String html=null;
+                if(p.tour_flag.equals(TicketType.DC)){
+                    html=initC(TicketType.DC);
+                }else if(p.tour_flag.equals(TicketType.WC)){
+                    html=initC(TicketType.WC);
+                }
+
+                if(StringUtils.isNotEmpty(html)){
+                    String htmlArr[]=html.split("\n");
+                    String globalRepeatSubmitTokenReg="(?<=globalRepeatSubmitToken = \')[^\']+";
+                    Matcher globalRepeatSubmitTokenRegMatch=Pattern.compile(globalRepeatSubmitTokenReg).matcher(html);
+                    globalRepeatSubmitToken=globalRepeatSubmitTokenRegMatch.find()?globalRepeatSubmitTokenRegMatch.group():null;
+                    String ticketInfoForPassengerFormReg="(?<=ticketInfoForPassengerForm=).*(?=;)";
+                    String ticketInfoForPassengerForm;
+                    Matcher ticketInfoForPassengerFormMatch=Pattern.compile(globalRepeatSubmitTokenReg).matcher(html);
+                    ticketInfoForPassengerForm=ticketInfoForPassengerFormMatch.find()?ticketInfoForPassengerFormMatch.group():null;
+
+                }
+                if(globalRepeatSubmitToken!=null){
+                    JSONObject passengerJson=getPassengerDTOs(globalRepeatSubmitToken);
+
+
+                }
+
+            }else{
+                System.out.println("存在未处理订单！");
+            }
+            System.out.println(sorJson);
+        }else{
+            System.out.println("未登录");
+        }
+    }
+
+    public static JSONObject getQueueCount(){
+        String queueCountUrl="https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
+        return null;
+    }
+
+    public static JSONObject checkOrderInfo(){
+        String checkOrderInfoUrl="https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
+        HttpUtils.Post(checkOrderInfoUrl, Form.form()
+                .add("cancel_flag", "2")// 固定值
+                .add("bed_level_order_num", "000000000000000000000000000000")// 固定值
+                //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
+                .add("passengerTicketStr", "")// 旅客信息字符串
+                //乘客名,证件类型,证件号,乘客类型
+                .add("oldPassengerStr", "")// 旅客信息字符串
+                .add("tour_flag", "dc")  //
+                .add("randCode", "")// 前台输入验证码
+                .add("whatsSelect", "1")//固定值
+                .add("_json_att", "")
+                .add("REPEAT_SUBMIT_TOKEN", globalRepeatSubmitToken)
+                .build());
+
+        return null;
+    }
+    public static JSONObject submitOrderRequest(){
+        return HttpUtils.Post(submitOrderRequest,Form.form()
+                .add("secretStr", cr.secretStr)//票id
+                .add("train_date", p.trainDate)//出发日期
+                .add("back_train_date", p.trainDate)//返程日期(单程和出发日期一样)
+                .add("tour_flag", p.tour_flag)//表单单程车票
+                .add("purpose_codes", p.purpose_codes)//成人票
+                .add("query_from_station_name", p.from_sta_str)//出发站
+                .add("query_to_station_name", p.to_sta_str)//到达站
+                .add("undefined", "")
+                .build());
+    }
+
+    public static void PRList(){
+        System.out.println();
+        for(cR cr:list){
+            System.out.println(cr.queryLeftNewDTO.station_train_code);
         }
     }
 
@@ -58,68 +137,112 @@ public class BuyTicket {
            return 'Q';
         }
     }
+
     public static void selectTicket(){
-        //车次类型>时间
+        Proority prooritys[]=Proority.getProority();
+        if(list==null||list.size()==0){
+            cr=null;
+            return;
+        }
         Collections.sort(list, new Comparator<cR>() {
             @Override
             public int compare(cR c1, cR c2) {
-                String tc1=c1.queryLeftNewDTO.station_train_code;
-                String tc2=c2.queryLeftNewDTO.station_train_code;
-                char le1=getFirstLetter(tc1.charAt(0));
-                char le2=getFirstLetter(tc2.charAt(0));
-                int a=0;
-                int b=0;
-                if(p.trainType!=null){
-                    a=p.trainType.indexOf(le1);
-                    b=p.trainType.indexOf(le2);
-                }
-                if(a==b&&p.arrTime!=null){
-                    int hour=p.arrTime[0];
-                    int min=p.arrTime[1];
-                    String time1[]=c1.queryLeftNewDTO.arrive_time.split(":");
-                    String time2[]=c2.queryLeftNewDTO.arrive_time.split(":");
-
-                    int habs1=Math.abs(Integer.parseInt(time1[0])-hour);
-                    int mabs1=Math.abs(Integer.parseInt(time1[1])-min);
-
-                    int habs2=Math.abs(Integer.parseInt(time2[0])-hour);
-                    int mabs2=Math.abs(Integer.parseInt(time2[1])-min);
-                    if(habs1==habs2){
-                        return mabs1-mabs2;
+                int x=0;
+                if(prooritys!=null){
+                    for(Proority proority:prooritys){
+                        if(x==0){
+                            switch (proority.proorityId){
+                                case traintype:
+                                    if(p.trainType!=null){
+                                        String tc1=c1.queryLeftNewDTO.station_train_code;
+                                        String tc2=c2.queryLeftNewDTO.station_train_code;
+                                        char le1=getFirstLetter(tc1.charAt(0));
+                                        char le2=getFirstLetter(tc2.charAt(0));
+                                        int a=p.trainType.indexOf(le1);
+                                        int b=p.trainType.indexOf(le2);
+                                        x=a-b;
+                                    }
+                                    break;
+                                case seattype:
+                                    Stum psts[]=p.st;
+                                    if(psts!=null){
+                                        for(int k=0;k<psts.length;k++){
+                                            int sc1=0;
+                                            int sc2=0;
+                                            if(Seats.getSeatCount(psts[k],c1.queryLeftNewDTO)!=null){
+                                                sc1=1;
+                                            }
+                                            if(Seats.getSeatCount(psts[k],c2.queryLeftNewDTO)!=null){
+                                                sc2=1;
+                                            }
+                                            if(sc1!=sc2){
+                                                x=sc2-sc1;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case starttime:
+                                    if(p.starttime!=null){
+                                        int hour=p.starttime[0];
+                                        int min=p.starttime[1];
+                                        String time1[]=c1.queryLeftNewDTO.start_time.split(":");
+                                        String time2[]=c2.queryLeftNewDTO.start_time.split(":");
+                                        int habs1=Math.abs(Integer.parseInt(time1[0])-hour);
+                                        int mabs1=Math.abs(Integer.parseInt(time1[1])-min);
+                                        int habs2=Math.abs(Integer.parseInt(time2[0])-hour);
+                                        int mabs2=Math.abs(Integer.parseInt(time2[1])-min);
+                                        x=habs1==habs2?mabs1-mabs2:habs1-habs2;
+                                    }
+                                    break;
+                                case arrivetime:
+                                    if(p.arrTime!=null){
+                                        int hour=p.arrTime[0];
+                                        int min=p.arrTime[1];
+                                        String time1[]=c1.queryLeftNewDTO.arrive_time.split(":");
+                                        String time2[]=c2.queryLeftNewDTO.arrive_time.split(":");
+                                        int habs1=Math.abs(Integer.parseInt(time1[0])-hour);
+                                        int mabs1=Math.abs(Integer.parseInt(time1[1])-min);
+                                        int habs2=Math.abs(Integer.parseInt(time2[0])-hour);
+                                        int mabs2=Math.abs(Integer.parseInt(time2[1])-min);
+                                        x=habs1==habs2?mabs1-mabs2:habs1-habs2;
+                                    }
+                                    break;
+                                case lishi:
+                                    String lishi1[]=c1.queryLeftNewDTO.lishi.split(":");
+                                    String lishi2[]=c2.queryLeftNewDTO.lishi.split(":");
+                                    int hour1=Integer.parseInt(lishi1[0]);
+                                    int hour2=Integer.parseInt(lishi2[0]);
+                                    int min1=Integer.parseInt(lishi1[1]);
+                                    int min2=Integer.parseInt(lishi2[1]);
+                                    x=hour1==hour2?min1-min2:hour1-hour2;
+                                    break;
+                            }
+                        }else{
+                            break;
+                        }
                     }
-                    return habs1-habs2;
                 }
-                return a-b;
+                return x;
             }
         });
+        cr=list.get(0);
     }
 
-    public JSONObject getPassengerDTOs(){
+    public static JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN){
         return HttpUtils.Post(PASSENGERURL, Form.form()
                 .add("_json_att", "")
-                .add("REPEAT_SUBMIT_TOKEN", "").build());//initc中获取的参数
+                .add("REPEAT_SUBMIT_TOKEN", globalRepeatSubmitToken).build());
     }
 
-    public static JSONObject submitOrderRequest(){
-        return HttpUtils.Post(submitOrderRequest,Form.form()
-                .add("secretStr", "")//cR.secretStr
-                .add("train_date", "")//出发日期
-                .add("back_train_date", "")//当前查询日期（如果是往返票，则为返程日期，也即出发日期）
-                .add("tour_flag", "dc")//表单单程车票
-                .add("purpose_codes", "ADULT")//成人票
-                .add("query_from_station_name", "")//出发站
-                .add("query_to_station_name", "")//到达站
-                .add("undefined", "")
-                .build());
-    }
-
-    public String initC(int type){
+    public static String initC(String type){
         List<NameValuePair> lp=Form.form().add("_json_att", "").build();
-        if(type==DC){
+        if(type.equals(TicketType.DC)){
             return HttpUtils.PostStr(DCURL,lp);
-        }else{
+        }else if(type.equals(TicketType.WC)){
             return HttpUtils.PostStr(WCURL, lp);
         }
+        return null;
     }
 
     public static List<cR> retrieve(){
@@ -151,7 +274,7 @@ public class BuyTicket {
                 boolean flag=false;
                 for(int i=0;i<st.length;i++){
                     String count=Seats.getSeatCount(st[i],cp);
-                    if(!"0".equals(count)){
+                    if(count!=null){
                         flag=true;
                         break;
                     }

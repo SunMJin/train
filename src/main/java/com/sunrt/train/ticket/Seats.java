@@ -26,11 +26,21 @@ public class Seats {
         return sts;
     }
 
+
+    public static boolean isExistSeat(String numStr){
+        if(StringUtils.isNotEmpty(numStr)&&!"无".equals(numStr)&&!"--".equals(numStr)){
+            return true;
+        }
+        return false;
+    }
     public static String getSeatCount(Stum stum, cP cp){
         String numStr=null;
         switch(stum){
             case swz:
-                numStr=cp.swz_num;
+                if(isExistSeat(cp.swz_num)){
+                    numStr=cp.swz_num;
+                }
+                numStr=cp.tz_num;
                 break;
             case zy:
                 numStr=cp.zy_num;
@@ -60,10 +70,10 @@ public class Seats {
                 numStr=cp.wz_num;
                 break;
         }
-        if(StringUtils.isNotEmpty(numStr)&&!"无".equals(numStr)&&!"--".equals(numStr)){
+        if(isExistSeat(numStr)){
             return numStr;
         }
-        return "0";
+        return null;
     }
 }
 
