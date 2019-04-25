@@ -9,6 +9,7 @@ import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Form;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -36,6 +37,12 @@ public class BuyTicket {
     private final static String PASSENGERURL="https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
 
     private static String globalRepeatSubmitToken;
+    private static String tour_flag;
+    private static String cancel_flag;
+    private static String bed_level_order_num;
+    private static String passengerTicketStr;
+    private static String oldPassengerStr;
+
     public static void start (Param p){
         BuyTicket.p=p;
         list=Tickets.searchTickets(p);
@@ -55,10 +62,10 @@ public class BuyTicket {
             String sorData=sorJson.getString("data");
             if(sorStatus&&"N".equals(sorData)){
                 String html=null;
-                if(p.tour_flag.equals(TicketType.DC)){
-                    html=initC(TicketType.DC);
-                }else if(p.tour_flag.equals(TicketType.WC)){
-                    html=initC(TicketType.WC);
+                if(p.tour_flag.equals(Constant.DC)){
+                    html=initC(Constant.DC);
+                }else if(p.tour_flag.equals(Constant.WC)){
+                    html=initC(Constant.WC);
                 }
 
                 if(StringUtils.isNotEmpty(html)){
@@ -67,16 +74,55 @@ public class BuyTicket {
                     Matcher globalRepeatSubmitTokenRegMatch=Pattern.compile(globalRepeatSubmitTokenReg).matcher(html);
                     globalRepeatSubmitToken=globalRepeatSubmitTokenRegMatch.find()?globalRepeatSubmitTokenRegMatch.group():null;
                     String ticketInfoForPassengerFormReg="(?<=ticketInfoForPassengerForm=).*(?=;)";
-                    String ticketInfoForPassengerForm;
-                    Matcher ticketInfoForPassengerFormMatch=Pattern.compile(globalRepeatSubmitTokenReg).matcher(html);
-                    ticketInfoForPassengerForm=ticketInfoForPassengerFormMatch.find()?ticketInfoForPassengerFormMatch.group():null;
+                    Matcher ticketInfoForPassengerFormMatch=Pattern.compile(ticketInfoForPassengerFormReg).matcher(html);
+                    JSONObject ticketInfoForPassengerForm=ticketInfoForPassengerFormMatch.find()?new JSONObject(ticketInfoForPassengerFormMatch.group()):null;
 
+                    JSONObject limitBuySeatTicketDTOJson=ticketInfoForPassengerForm.getJSONObject("limitBuySeatTicketDTO");
+                    JSONArray seat_type_codes=limitBuySeatTicketDTOJson.getJSONArray("seat_type_codes");
+                    JSONArray ticket_type_codes=limitBuySeatTicketDTOJson.getJSONArray("ticket_type_codes");
+
+                    Stum sts[]=p.st;
+                    for(Stum st:sts){
+                        String count=Seats.getSeatCount(st,cr.queryLeftNewDTO);
+                        if(count!=null){
+                            if(st==Stum.wz){
+                                Seats.getWZId(sts,seat_type_codes);
+                            }else{
+                                String seatId=Seats.getSeatId(st,seat_type_codes);
+                            }
+
+                            break;
+                        }
+                    }
+                    ticketInfoForPassengerForm.getJSONArray("cardTypes");
+
+
+                    //passengerTicketStr;
+                    //oldPassengerStr
+
+
+
+                    JSONObject orderRequestDTOJson=ticketInfoForPassengerForm.getJSONObject("orderRequestDTO");
+                    if(orderRequestDTOJson.get("cancel_flag")==null){
+                        cancel_flag="2";
+                    }
+                    if(orderRequestDTOJson.get("bed_level_order_num")==null){
+                        bed_level_order_num="000000000000000000000000000000";
+                    }
+                    tour_flag=orderRequestDTOJson.getString("tour_flag");
                 }
-                if(globalRepeatSubmitToken!=null){
-                    JSONObject passengerJson=getPassengerDTOs(globalRepeatSubmitToken);
 
 
+
+
+
+
+                JSONObject passengerJson=getPassengerDTOs(globalRepeatSubmitToken);
+                boolean passengerStatus=passengerJson.getBoolean("status");
+                if(passengerStatus){
+                    JSONArray normal_passengers=passengerJson.getJSONObject("data").getJSONArray("normal_passengers");
                 }
+
 
             }else{
                 System.out.println("存在未处理订单！");
@@ -95,15 +141,15 @@ public class BuyTicket {
     public static JSONObject checkOrderInfo(){
         String checkOrderInfoUrl="https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
         HttpUtils.Post(checkOrderInfoUrl, Form.form()
-                .add("cancel_flag", "2")// 固定值
-                .add("bed_level_order_num", "000000000000000000000000000000")// 固定值
+                .add("cancel_flag", cancel_flag)// 固定值
+                .add("bed_level_order_num", bed_level_order_num)// 固定值
                 //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
-                .add("passengerTicketStr", "")// 旅客信息字符串
+                .add("passengerTicketStr", passengerTicketStr)// 旅客信息字符串
                 //乘客名,证件类型,证件号,乘客类型
-                .add("oldPassengerStr", "")// 旅客信息字符串
-                .add("tour_flag", "dc")  //
-                .add("randCode", "")// 前台输入验证码
-                .add("whatsSelect", "1")//固定值
+                .add("oldPassengerStr", oldPassengerStr)// 旅客信息字符串
+                .add("tour_flag", tour_flag)  //
+                .add("randCode", "")// 输入验证码
+                .add("whatsSelect", "1")//是否选择了联系人
                 .add("_json_att", "")
                 .add("REPEAT_SUBMIT_TOKEN", globalRepeatSubmitToken)
                 .build());
@@ -237,9 +283,9 @@ public class BuyTicket {
 
     public static String initC(String type){
         List<NameValuePair> lp=Form.form().add("_json_att", "").build();
-        if(type.equals(TicketType.DC)){
+        if(type.equals(Constant.DC)){
             return HttpUtils.PostStr(DCURL,lp);
-        }else if(type.equals(TicketType.WC)){
+        }else if(type.equals(Constant.WC)){
             return HttpUtils.PostStr(WCURL, lp);
         }
         return null;
