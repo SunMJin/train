@@ -1,12 +1,12 @@
 package com.sunrt.train.ticket;
 
 
-import com.sunrt.train.data.cP;
+import com.sunrt.train.data.Cp;
+import com.sunrt.train.data.Cr;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,71 +39,28 @@ public class Seats {
         return false;
     }
 
-
-
-    public static boolean iscontainsSeat(Stum sts[],Stum st){
-        for(Stum s:sts){
-            if(s==st){
-                return true;
+    public static Stum confirmSeatType(Stum sts[], Cr cr){
+        for(Stum st:sts){
+            String count=Seats.getSeatCount(st,cr.queryLeftNewDTO);
+            if(count!=null){
+                return st;
             }
-        }
-        return false;
-    }
-
-    public static String getWZId(Stum sts[],JSONArray seat_type_codes){
-        if(sts!=null){
-            Stum st=null;
-            for(int i=0;i<seat_type_codes.length();i++){
-                JSONObject jo=seat_type_codes.getJSONObject(i);
-                st=getSeatEnum(jo.getString("value"));
-                if(st!=null){
-                    if(iscontainsSeat(sts,st)){
-                        return jo.getString("id");
-                    }
-                }
-            }
-
         }
         return null;
     }
 
-
-
-    public static Stum getSeatEnum(String value){
-        Stum st=null;
-        switch (value){
-            case "商务座":
-                st=Stum.swz;
-                break;
-            case "一等座":
-                st=Stum.zy;
-                break;
-            case "二等座":
-                st=Stum.ze;
-                break;
-            case "高级软卧":
-                st=Stum.gr;
-                break;
-            case "软卧":
-                st=Stum.rw;
-                break;
-            case "动卧":
-                st=Stum.srrb;
-                break;
-            case "硬卧":
-                st=Stum.yw;
-                break;
-            case "软座":
-                st=Stum.rz;
-                break;
-            case "硬座":
-                st=Stum.yz;
-                break;
+    public static String getWZId(Stum sts[],JSONArray seat_type_codes){
+        for(int i=0;i<sts.length;i++){
+            String id=getSeatId(sts,sts[i],seat_type_codes);
+            Matcher match=Pattern.compile("(?<=\"id\":\")"+id).matcher(seat_type_codes.toString());
+            if(match.find()){
+                return match.group();
+            }
         }
-        return st;
+        return null;
     }
 
-    public static String getSeatId(Stum stum, JSONArray seat_type_codes){
+    public static String getSeatId(Stum []sts,Stum stum, JSONArray seat_type_codes){
         String str=null;
         switch (stum){
             case swz:
@@ -133,6 +90,8 @@ public class Seats {
             case yz:
                 str="硬座";
                 break;
+            case wz:
+                return getWZId(sts,seat_type_codes);
         }
         if(str!=null){
             String reg="(?<=\"id\":\")\\w*(?=\",\"value\":\""+str+"\")";
@@ -144,7 +103,7 @@ public class Seats {
         return null;
     }
 
-    public static String getSeatCount(Stum stum, cP cp){
+    public static String getSeatCount(Stum stum, Cp cp){
         String numStr=null;
         switch(stum){
             case swz:

@@ -15,4 +15,7 @@ public class DateUtils {
     public static String getToday(SimpleDateFormat sdf){
         return sdf.format(new Date());
     }
+    public static String getToday(String formatter){
+        return getToday(new SimpleDateFormat(formatter));
+    }
 }

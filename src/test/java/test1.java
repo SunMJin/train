@@ -36,9 +36,9 @@ public class test1 {
             }
         }
 
-        List<cR> list= Tickets.search(train_date,from_station,to_station,"ADULT");
-        for(cR cr:list){
-            cP cp=cr.queryLeftNewDTO;
+        List<Cr> list= Tickets.search(train_date,from_station,to_station,"ADULT");
+        for(Cr cr:list){
+            Cp cp=cr.queryLeftNewDTO;
             if("Y".equals(cp.canWebBuy)){
                 String countStr=getSeatCountStr(sts[index].stum,cp);
                 if(countStr!=null){

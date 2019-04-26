@@ -1,6 +1,6 @@
 package com.sunrt.train.data;
 
-public class cP{
+public class Cp {
     public  String train_no;
     public  String station_train_code;
     public  String start_station_telecode;

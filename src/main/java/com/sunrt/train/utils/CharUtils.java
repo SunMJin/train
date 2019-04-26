@@ -31,4 +31,12 @@ public class CharUtils {
         }
         return str;
     }
+
+    public static char getTrainCodeFirstLetter(char c){
+        if(CharUtils.isLetter(c)){
+            return c;
+        }else{
+            return 'Q';
+        }
+    }
 }

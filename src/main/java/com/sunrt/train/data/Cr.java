@@ -1,7 +1,7 @@
 package com.sunrt.train.data;
 
-public class cR{
+public class Cr {
     public String secretStr;
     public String buttonTextInfo;
-    public cP queryLeftNewDTO;
+    public Cp queryLeftNewDTO;
 }

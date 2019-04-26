@@ -3,6 +3,7 @@ package com.sunrt.train.data;
 import com.sunrt.train.ticket.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.fluent.Form;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,20 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tickets {
-    public static List<cR> searchTickets(Param p){
-        JSONObject json_result=HttpUtils.Get("https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date="
-                +p.trainDate+"&leftTicketDTO.from_station="+p.from_sta+"&leftTicketDTO.to_station="+p.to_sta+"&purpose_codes="+p.purpose_codes+"").getJSONObject("data");
-        String flag=json_result.getString("flag");
-        List<cR> cN=new ArrayList<>();
-        if("1".equals(flag)){
+    public static List<Cr> searchTickets(Param p){
+        try{
+            JSONObject json_result=HttpUtils.Get(
+                    Constant.QUERYURL,Form.form()
+                    .add("leftTicketDTO.train_date",p.trainDate)
+                    .add("leftTicketDTO.from_station",p.from_sta)
+                    .add("leftTicketDTO.to_station",p.to_sta)
+                    .add("purpose_codes",p.purpose_codes)
+                    .build())
+                    .getJSONObject("data");
+            List<Cr> cN=new ArrayList<>();
             JSONArray cO=json_result.getJSONArray("result");
             JSONObject cQ=json_result.getJSONObject("map");
             for(int cM=0;cM<cO.length();cM++){
-                cR cR=new cR();
+                Cr cR=new Cr();
                 String cL[]=cO.get(cM).toString().split("\\|");
                 cR.secretStr = cL[0];
                 cR.buttonTextInfo = cL[1];
-                cP cP = new cP();
+                Cp cP = new Cp();
                 cP.train_no = cL[2];
                 cP.station_train_code = cL[3];
                 cP.start_station_telecode = cL[4];
@@ -42,7 +48,6 @@ public class Tickets {
                 cP.to_station_no = cL[17];
                 cP.is_support_card = cL[18];
                 cP.controlled_train_flag = cL[19];
-
                 cP.gg_num = StringUtils.isNotEmpty(cL[20]) ? cL[20] : "--";
                 cP.gr_num = StringUtils.isNotEmpty(cL[21]) ? cL[21] : "--";
                 cP.qt_num = StringUtils.isNotEmpty(cL[22]) ? cL[22] : "--";
@@ -70,7 +75,7 @@ public class Tickets {
                 cN.add(cR);
             }
             return cN;
-        }
+        }catch (Exception e){}
         return null;
     }
 }

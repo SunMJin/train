@@ -1,7 +1,7 @@
 package com.sunrt.train.login;
 
-import com.sunrt.train.ticket.BuyTicket;
-import com.sunrt.train.ticket.Params;
+import com.sunrt.train.ticket.BuyTicketHandle;
+import com.sunrt.train.ticket.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -11,8 +11,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
 
-import java.io.Console;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Properties;
 
@@ -123,7 +122,12 @@ public class Login {
                     if(tkJson.getInt("result_code")==0){
                         JSONObject ucJson=HttpUtils.Post(uamauthclient,Form.form().add("tk", tkJson.getString("newapptk")).build());
                         if(ucJson.getInt("result_code")==0){
-                            BuyTicket.start(Params.getParams());
+                            //BuyTicketHandle.start(Params.getParams());
+                            File cookiesFile=new File("d:"+File.separator+"obj");
+                            ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(cookiesFile));
+                            oos.writeObject(HttpUtils.getCookieStore());
+                            oos.close();
+                            BuyTicketHandle.start(new Param(null,"2019-04-27","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
                         }
                     }
                 }
