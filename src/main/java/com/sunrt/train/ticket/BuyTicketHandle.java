@@ -54,7 +54,6 @@ public class BuyTicketHandle {
                 //获取座位的id
                 String seatId=Seats.getSeatId(p.st,st,seat_type_codes);
             }
-
             ticketInfoForPassengerForm.getJSONArray("cardTypes");
             JSONObject orderRequestDTOJson=ticketInfoForPassengerForm.getJSONObject("orderRequestDTO");
             String cancel_flag=null;
