@@ -44,6 +44,7 @@ public class Reservation {
         } catch (Exception e) {}
         return null;
     }
+
     public static JSONObject getQueueCount(){
         String queueCountUrl="https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
         return null;
