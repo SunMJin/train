@@ -68,8 +68,24 @@ public class Reservation {
     }
 
     public static String getPassengerTicketStr(){
+        String aA = "";
+        //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
+        /*for (int aB = 0; aB < limit_tickets.length; aB++) {
+
+        }*/
         return null;
     }
+
+    /*getpassengerTickets = function() {
+
+                var aA = "";
+                for (var aB = 0; aB < limit_tickets.length; aB++) {
+                    var aC = limit_tickets[aB].seat_type + ",0," + limit_tickets[aB].ticket_type + "," + limit_tickets[aB].name + "," + limit_tickets[aB].id_type + "," + limit_tickets[aB].id_no + "," + (limit_tickets[aB].phone_no == null ? "": limit_tickets[aB].phone_no) + "," + (limit_tickets[aB].save_status == "" ? "N": "Y");
+                    aA += aC + "_"
+                }
+                return aA.substring(0, aA.length - 1)
+            };*/
+
     public static String oldPassengerStr(){
         return null;
     }

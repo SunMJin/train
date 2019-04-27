@@ -11,6 +11,6 @@ public class test2 {
         //登陆
         Login.testmain();
         //Params.getParams();
-        //BuyTicketHandle.start(new Param(null,"2019-05-02","WXH","CCT","ADULT","G",new int[]{20,32},null,"无锡","长春","dc"));
+        //BuyTicketHandle.start(new Param(null,"2019-04-27","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
     }
 }

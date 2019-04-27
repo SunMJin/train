@@ -48,12 +48,20 @@ public class BuyTicketHandle {
             JSONArray seat_type_codes=limitBuySeatTicketDTOJson.getJSONArray("seat_type_codes");
             JSONArray ticket_type_codes=limitBuySeatTicketDTOJson.getJSONArray("ticket_type_codes");
 
+            JSONObject passengerJson=Reservation.getPassengerDTOs(globalRepeatSubmitToken);
+            boolean passengerStatus=passengerJson.getBoolean("status");
+            if(passengerStatus){
+                JSONArray normal_passengers=passengerJson.getJSONObject("data").getJSONArray("normal_passengers");
+            }
+
             //确定购买座位类型
             Stum st=Seats.confirmSeatType(p.st,cr);
+
             if(st!=null){
                 //获取座位的id
                 String seatId=Seats.getSeatId(p.st,st,seat_type_codes);
             }
+
             ticketInfoForPassengerForm.getJSONArray("cardTypes");
             JSONObject orderRequestDTOJson=ticketInfoForPassengerForm.getJSONObject("orderRequestDTO");
             String cancel_flag=null;
@@ -66,11 +74,7 @@ public class BuyTicketHandle {
             }
             String tour_flag=null;
             tour_flag=orderRequestDTOJson.getString("tour_flag");
-            JSONObject passengerJson=Reservation.getPassengerDTOs(globalRepeatSubmitToken);
-            boolean passengerStatus=passengerJson.getBoolean("status");
-            if(passengerStatus){
-                JSONArray normal_passengers=passengerJson.getJSONObject("data").getJSONArray("normal_passengers");
-            }
+
         }catch (Exception e){
         }
     }

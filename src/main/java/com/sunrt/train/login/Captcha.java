@@ -233,7 +233,13 @@ public class Captcha {
     }
 
     public static void refreshPassCode(){
-        HttpUtils.clearCookies();
+        try {
+            HttpUtils.clearCookies();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         jFrame.remove(codeLabel);
         points.clear();
         createPassCode();

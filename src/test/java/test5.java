@@ -5,7 +5,7 @@ import java.io.*;
 
 public class test5 {
     public static void main(String[] args) throws Exception {
-        String x=HttpUtils.GetStr("http://www.baidu.com/s", Form.form().add("wd", "1").build());
-        System.out.println(x);
+        String str="12212";
+        System.out.println(str.split("@").length);
     }
 }
