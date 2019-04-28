@@ -1,5 +1,6 @@
 package com.sunrt.train.utils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -8,7 +9,7 @@ public class DateUtils {
         try{
             Date date = sdf.parse(str);
             return str.equals(sdf.format(date));
-        }catch(Exception e){
+        }catch(ParseException e){
             return false;
         }
     }

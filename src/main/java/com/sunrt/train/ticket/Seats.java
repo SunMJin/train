@@ -1,36 +1,31 @@
 package com.sunrt.train.ticket;
-
-
 import com.sunrt.train.data.Cp;
 import com.sunrt.train.data.Cr;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class Seats {
-
-    private static final String DESC[]=new String[]{"商务座","一等座","二等座","高级软卧","软卧一等卧","动卧","硬卧二等卧","软座","硬座","无座"};
     public Stum stum;
     public String desc;
 
+    public static Seats sts[];
+    public Seats(Stum stum, String desc) {
+        this.stum = stum;
+        this.desc = desc;
+    }
 
-    public static Seats[] getSeats(){
-        Seats sts[]=new Seats[DESC.length];
+    static{
+        sts=new Seats[Constant.SeatsText.length];
         int index=0;
         for(Stum stum:Stum.values()){
-            Seats st=new Seats();
-            st.stum=stum;
-            st.desc=DESC[index];
+            Seats st=new Seats(stum,Constant.SeatsText[index]);
             sts[index]=st;
             index++;
         }
-        return sts;
     }
-
 
     public static boolean isExistSeat(String numStr){
         if(StringUtils.isNotEmpty(numStr)&&!"无".equals(numStr)&&!"--".equals(numStr)){

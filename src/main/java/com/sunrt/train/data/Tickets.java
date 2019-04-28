@@ -1,38 +1,32 @@
 package com.sunrt.train.data;
 
+import com.sunrt.train.TrainHttp;
+import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.ticket.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Form;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tickets {
-    public static List<Cr> searchTickets(Param p){
-        JSONObject json_result= null;
-        try {
-            json_result = HttpUtils.Get(
-                    Constant.QUERYURL, Form.form()
-                            .add("leftTicketDTO.train_date",p.trainDate)
-                            .add("leftTicketDTO.from_station",p.from_sta)
-                            .add("leftTicketDTO.to_station",p.to_sta)
-                            .add("purpose_codes",p.purpose_codes)
-                            .build())
-                    .getJSONObject("data");
-        } catch (URISyntaxException e) {
-        } catch (IOException e) {
-        } catch (JSONException e){
+    private static HttpUtils httpUtils = TrainHttp.getHttp();
+
+    public static List<Cr> searchTickets(Param p) throws HttpException {
+        if(p==null){
+            throw new NullPointerException();
         }
-        if(json_result==null){
-            System.out.println("查询失败！");
-            return;
-        }
+        JSONObject json_result = httpUtils.Get(
+                Constant.QUERYURL, Form.form()
+                        .add("leftTicketDTO.train_date",p.trainDate)
+                        .add("leftTicketDTO.from_station",p.from_sta)
+                        .add("leftTicketDTO.to_station",p.to_sta)
+                        .add("purpose_codes",p.purpose_codes)
+                        .build())
+                .getJSONObject("data");
         List<Cr> cN=new ArrayList<>();
         JSONArray cO=json_result.getJSONArray("result");
         JSONObject cQ=json_result.getJSONObject("map");
@@ -87,6 +81,5 @@ public class Tickets {
             cN.add(cR);
         }
         return cN;
-        return null;
     }
 }

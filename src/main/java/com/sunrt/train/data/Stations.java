@@ -1,23 +1,22 @@
 package com.sunrt.train.data;
 
+import com.sunrt.train.TrainHttp;
+import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.utils.HttpUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Stations {
+    private static HttpUtils httpUtils = TrainHttp.getHttp();
+
     private static String stations[];
-    public static boolean init(){
+    public static boolean init() {
         String stationsStr= null;
         try {
-            stationsStr = HttpUtils.GetStr(Constant.STATIONSURL);
-        } catch (IOException e) {
-        } catch (URISyntaxException e) {
+            stationsStr = httpUtils.GetHtml(Constant.STATIONSURL);
+        } catch (HttpException e) {
+            return false;
         }
         if(stationsStr!=null){
             stations=stationsStr.split("@");

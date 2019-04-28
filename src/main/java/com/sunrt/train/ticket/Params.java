@@ -31,7 +31,7 @@ public class Params {
 
     private static Stum[] getSeatType(){
         System.out.println("请选择一组座位类型，逗号分隔，顺序优先级：");
-        Seats sts[]= Seats.getSeats();
+        Seats sts[]= Seats.sts;
         for(int i=0;i<sts.length;i++){
             System.out.println(i+":"+sts[i].desc);
         }

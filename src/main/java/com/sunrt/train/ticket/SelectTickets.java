@@ -11,9 +11,8 @@ import java.util.List;
 
 public class SelectTickets {
     public static List<Cr> retrieve(List<Cr> list,Param p){
-        if(list==null){
-            System.out.println("没有搜索到车票！");
-            return null;
+        if(list==null||p==null){
+            throw new NullPointerException();
         }
         String trainType=p.trainType;
         Iterator<Cr> it=list.iterator();
@@ -54,11 +53,10 @@ public class SelectTickets {
     }
 
     public static Cr orderTicket(List<Cr> list,Param p){
-        Cr cr=null;
-        Proority prooritys[]=Proority.getProority();
-        if(list==null||list.size()==0){
-            return cr;
+        if(list==null||list.size()==0||p==null){
+            throw new NullPointerException();
         }
+        Proority prooritys[]=Proority.getProority();
         Collections.sort(list, new Comparator<Cr>() {
             @Override
             public int compare(Cr c1, Cr c2) {

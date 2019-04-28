@@ -1,9 +1,14 @@
 package com.sunrt.train.login;
 
+import com.sunrt.train.TrainHttp;
+import com.sunrt.train.exception.HttpException;
+import com.sunrt.train.exception.VerifcationException;
+import com.sunrt.train.ticket.BuyTicketHandle;
+import com.sunrt.train.ticket.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.json.JSONException;
 import org.json.JSONObject;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.MouseEvent;
@@ -18,48 +23,54 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Captcha {
-
-    private static Map<JLabel,String> points=new HashMap();
-    private static JFrame jFrame;
+    private static HttpUtils httpUtils = TrainHttp.getHttp();
+    private static Map<JLabel,String> points;
+    private static JFrame window;
     private static JLabel codeLabel;
+    private static ImageIcon imageIcon;
 
-    private static ImageIcon imageIcon=null;
+    private static void markFail(){
+        System.out.println(Constant.markFailText);
+    }
+
     static{
+        points=new HashMap();
+        InputStream in=Captcha.class.getResourceAsStream(Constant.markPath);
+        byte buf[]=null;
         try {
-            InputStream in=Captcha.class.getResourceAsStream(Constant.markPath);
-            byte buf[]=new byte[in.available()];
+            buf = new byte[in.available()];
             in.read(buf);
-            imageIcon=new ImageIcon(buf);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            markFail();
         }
-        jFrame=new JFrame();
-        jFrame.setIconImage(imageIcon.getImage());
-        jFrame.setTitle(Constant.title);
-        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jFrame.setLayout(null);
-        jFrame.setLocationRelativeTo(null);
-        jFrame.setSize((int)(Constant.CodeWidth*1.5),(int)(Constant.CodeHeight*1.5));
+        imageIcon=new ImageIcon(buf);
+        window =new JFrame();
+        window.setIconImage(imageIcon.getImage());
+        window.setTitle(Constant.title);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setLayout(null);
+        window.setLocationRelativeTo(null);
+        window.setSize((int)(Constant.CodeWidth*1.5),(int)(Constant.CodeHeight*1.5));
         addButton();
     }
 
     public static void setVisible(boolean flag){
-        jFrame.setVisible(flag);
+        window.setVisible(flag);
     }
 
-    public static ImageIcon getCode(){
+    public static ImageIcon getCode() throws VerifcationException {
         long temp = new Date().getTime();
         ByteArrayInputStream in=null;
         ByteArrayOutputStream baos=null;
         try {
-            JSONObject json=HttpUtils.Get(Constant.popup_passport_captcha + temp);
+            JSONObject json = httpUtils.Get(Constant.popup_passport_captcha + temp);
             in=new ByteArrayInputStream(Base64.decodeBase64(json.getString("image")));
             BufferedImage src = ImageIO.read(in);
             baos=new ByteArrayOutputStream(1024);
-            ImageIO.write(src, "JPG", baos);
+            ImageIO.write(src, Constant.codeFormat, baos);
             return new ImageIcon(baos.toByteArray());
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (Exception e){
+            throw new VerifcationException(e.getMessage());
         }finally {
             try {
                 if(in!=null){
@@ -69,14 +80,16 @@ public class Captcha {
                     baos.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new VerifcationException(e.getMessage());
             }
         }
-        return null;
     }
 
+    public static void codeCheckFail(){
+        System.out.println(Constant.codeCheckFail);
+    }
     public static void addButton(){
-        JButton submit=new JButton("提交");
+        JButton submit=new JButton(Constant.commitText);
         submit.setSize(70,30);
         submit.setLocation(0,200);
         submit.addMouseListener(new MouseListener() {
@@ -86,8 +99,26 @@ public class Captcha {
             }
             @Override
             public void mousePressed(MouseEvent e) {
-                if(checkPassCode()){
-                    Login.loginForUam(getRandCode());
+                try {
+                    if(checkPassCode()){
+                        JSONObject loginInfo=Login.loginForUam(getRandCode());
+                        if(loginInfo!=null){
+                            window.dispose();
+                            System.out.println(loginInfo);
+                            try{
+                                BuyTicketHandle.start(new Param(null,"2019-04-27","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
+                            }catch (HttpException e2){
+                                System.out.println("任务查询失败！");
+                            }
+
+                        }else{
+                            System.out.println(Constant.loginFailText);
+                        }
+                    }else{
+                        codeCheckFail();
+                    }
+                } catch (HttpException e1) {
+                    codeCheckFail();
                 }
             }
 
@@ -106,9 +137,9 @@ public class Captcha {
 
             }
         });
-        jFrame.add(submit);
+        window.add(submit);
 
-        JButton rerush=new JButton("刷新");
+        JButton rerush=new JButton(Constant.rerushText);
         rerush.setSize(70,30);
         rerush.setLocation(90,200);
         rerush.addMouseListener(new MouseListener() {
@@ -137,13 +168,18 @@ public class Captcha {
 
             }
         });
-        jFrame.add(rerush);
+        window.add(rerush);
 
-        jFrame.repaint();
+        window.repaint();
     }
 
-    public static void createPassCode(){
-        ImageIcon code=getCode();
+    public static void createPassCode() {
+        ImageIcon code= null;
+        try {
+            code = getCode();
+        } catch (VerifcationException e) {
+            codeGetFail();
+        }
         if(code!=null){
             codeLabel=new JLabel(code);
             codeLabel.addMouseListener(new MouseListener() {
@@ -203,56 +239,46 @@ public class Captcha {
             });
             codeLabel.setSize(Constant.CodeWidth,Constant.CodeHeight);
             codeLabel.setLocation(0,0);
-            jFrame.add(codeLabel);
-            jFrame.repaint();
+            window.add(codeLabel);
+            window.repaint();
         }
     }
 
-    public static boolean checkPassCode(){
+    public static boolean checkPassCode() throws HttpException {
         if(points.size()==0){
-            System.out.println("请选择验证码！");
+            System.out.println(Constant.noCodeText);
             return false;
         }
         String randCode=getRandCode();
-        String result_code=null;
-        try {
-            JSONObject json=HttpUtils.Get(Constant.popup_passport_captcha_check+"?answer="+randCode+"&&rand=sjrand&&login_site=E");
-            result_code=json.getString("result_code");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        if("4".equalsIgnoreCase(result_code)){
-            jFrame.dispose();
+        JSONObject json = httpUtils.Get(Constant.popup_passport_captcha_check+"?answer="+randCode+"&&rand=sjrand&&login_site=E");
+        String result_code;
+        result_code=json.getString("result_code");
+        if(Constant.checkSuccessCode.equalsIgnoreCase(result_code)){
             return true;
-
         }else{
             passCodeError();
+            return false;
         }
-        return false;
     }
 
-    public static void refreshPassCode(){
-        try {
-            HttpUtils.clearCookies();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        jFrame.remove(codeLabel);
+    public static void refreshPassCode() {
+        httpUtils.resetHttp();
+        window.remove(codeLabel);
         points.clear();
         createPassCode();
     }
 
-    public static void passCodeError(){
-        System.out.println("验证码错误");
+    public static void codeGetFail() {
+        System.out.println(Constant.codeGetFail);
+    }
+
+    public static void passCodeError() {
+        System.out.println(Constant.codeErrText);
         refreshPassCode();
     }
 
     public static String getRandCode(){
         String randCode = "";
-        //遍历点位
         for (String value : points.values()) {
             randCode += value + ",";
         }

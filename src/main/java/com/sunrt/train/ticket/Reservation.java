@@ -1,48 +1,55 @@
 package com.sunrt.train.ticket;
 
+import com.sunrt.train.TrainHttp;
 import com.sunrt.train.data.Cr;
+import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.utils.DateUtils;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Form;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.List;
 
 public class Reservation {
 
-    public static String initC(String type){
+    private static HttpUtils httpUtils =TrainHttp.getHttp();
+
+    public static String initC(String type) throws HttpException {
         List<NameValuePair> lp= Form.form().add("_json_att", "").build();
+        String url=null;
         if(type.equals(Constant.DC)){
-            return HttpUtils.PostStr(Constant.DCURL,lp);
+            url=Constant.DC;
         }else if(type.equals(Constant.WC)){
-            return HttpUtils.PostStr(Constant.WCURL, lp);
+            url=Constant.WC;
         }
-        return null;
+        return httpUtils.PostHtml(url,lp);
     }
 
-    public static JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN){
-        return HttpUtils.Post(Constant.PASSENGERURL, Form.form()
+    public static JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN) throws HttpException {
+        return httpUtils.Post(Constant.PASSENGERURL, Form.form()
                 .add("_json_att", "")
                 .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN).build());
     }
 
-    public static JSONObject submitOrderRequest(Cr cr,Param p){
+    public static JSONObject submitOrderRequest(Cr cr,Param p) throws HttpException {
         try {
-            return HttpUtils.Post(Constant.submitOrderRequest,Form.form()
+            return httpUtils.Post(Constant.submitOrderRequest,Form.form()
                     .add("secretStr", URLDecoder.decode( cr.secretStr, Constant.ENCODING))//票id
                     .add("train_date", p.trainDate)//出发日期
                     .add("back_train_date", DateUtils.getToday("yyyy-MM-dd"))//返程日期(单程为查票日期)
                     .add("tour_flag", p.tour_flag)//表单单程车票
                     .add("purpose_codes", p.purpose_codes)//成人票
                     .add("query_from_station_name", URLEncoder.encode(p.from_sta_str,Constant.ENCODING))//出发站
-                    .add("query_to_station_name", URLEncoder.encode(p.to_sta_str))//到达站
+                    .add("query_to_station_name", URLEncoder.encode(p.to_sta_str,Constant.ENCODING))//到达站
                     .add("undefined", null)
                     .build());
-        } catch (Exception e) {}
-        return null;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException();
+        }
     }
 
     public static JSONObject getQueueCount(){
@@ -50,8 +57,8 @@ public class Reservation {
         return null;
     }
 
-    public static JSONObject checkOrderInfo(String tour_flag,String globalRepeatSubmitToken,String cancel_flag,String bed_level_order_num){
-        HttpUtils.Post(Constant.CHECKORDERINFOURL, Form.form()
+    public static JSONObject checkOrderInfo(String tour_flag,String globalRepeatSubmitToken,String cancel_flag,String bed_level_order_num) throws HttpException {
+        return httpUtils.Post(Constant.CHECKORDERINFOURL, Form.form()
                 .add("cancel_flag", cancel_flag)// 固定值
                 .add("bed_level_order_num", bed_level_order_num)// 固定值
                 //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
@@ -64,7 +71,6 @@ public class Reservation {
                 .add("_json_att", "")
                 .add("REPEAT_SUBMIT_TOKEN", globalRepeatSubmitToken)
                 .build());
-        return null;
     }
 
     public static String getPassengerTicketStr(){

@@ -6,21 +6,22 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 public class SSLUtils {
 
     public static SSLConnectionSocketFactory trustAllHttpsCertificates() {
-        SSLContext sc = null;
         try {
-            sc = SSLContext.getInstance("TLS");
+            SSLContext sc = SSLContext.getInstance("TLS");
             sc.init(null, new TrustManager[]{new SSLUtils.TM()}, null);
             return new SSLConnectionSocketFactory(sc, NoopHostnameVerifier.INSTANCE);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+        } catch (KeyManagementException e){
         }
-        return null;
+        throw new RuntimeException();
     }
 
     static class TM implements TrustManager, X509TrustManager {

@@ -46,7 +46,6 @@ public class Proority {
             return proorities;
         } catch (IOException e) {
         } catch (NumberFormatException e){}
-        System.out.println("优先级配置错误！");
         return null;
     }
 }
