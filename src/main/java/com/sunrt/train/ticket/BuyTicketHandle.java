@@ -4,6 +4,7 @@ import com.sunrt.train.data.Cr;
 import com.sunrt.train.data.Tickets;
 import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.login.Login;
+import com.sunrt.train.utils.DateUtils;
 import com.sunrt.train.utils.RegUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,28 +47,40 @@ public class BuyTicketHandle {
         }else if(p.tour_flag.equals(Constant.WC)){
             html=Reservation.initC(Constant.WC);
         }
+
+        //相关变量
         String globalRepeatSubmitToken= RegUtils.getStrByReg("(?<=globalRepeatSubmitToken = \')[^\']+",html);
+
+
         JSONObject ticketInfoForPassengerForm=RegUtils.getJSONByReg("(?<=ticketInfoForPassengerForm=).*(?=;)",html);
         JSONObject limitBuySeatTicketDTOJson=ticketInfoForPassengerForm.getJSONObject("limitBuySeatTicketDTO");
+        //证件类型
+        ticketInfoForPassengerForm.getJSONArray("cardTypes");
+        //座位类型
         JSONArray seat_type_codes=limitBuySeatTicketDTOJson.getJSONArray("seat_type_codes");
+        //票类型
         JSONArray ticket_type_codes=limitBuySeatTicketDTOJson.getJSONArray("ticket_type_codes");
-
+        //联系人列表
+        JSONArray normal_passengers=null;
         JSONObject passengerJson=Reservation.getPassengerDTOs(globalRepeatSubmitToken);
         boolean passengerStatus=passengerJson.getBoolean("status");
         if(passengerStatus){
-            JSONArray normal_passengers=passengerJson.getJSONObject("data").getJSONArray("normal_passengers");
+            normal_passengers=passengerJson.getJSONObject("data").getJSONArray("normal_passengers");
         }
 
         //确定购买座位类型
         Stum st=Seats.confirmSeatType(p.st,cr);
-
+        String seatId=null;
         if(st!=null){
             //获取座位的id
-            String seatId=Seats.getSeatId(p.st,st,seat_type_codes);
+            seatId=Seats.getSeatId(p.st,st,seat_type_codes);
         }
 
-        ticketInfoForPassengerForm.getJSONArray("cardTypes");
+
+
         JSONObject orderRequestDTOJson=ticketInfoForPassengerForm.getJSONObject("orderRequestDTO");
+        String tour_flag=orderRequestDTOJson.getString("tour_flag");
+
         String cancel_flag=null;
         if(orderRequestDTOJson.get("cancel_flag")==null){
             cancel_flag=Constant.CANCELFLOG;
@@ -76,7 +89,27 @@ public class BuyTicketHandle {
         if(orderRequestDTOJson.get("bed_level_order_num")==null){
             bed_level_order_num=Constant.BED_LEVEL_ORDER_NUM;
         }
-        String tour_flag=null;
-        tour_flag=orderRequestDTOJson.getString("tour_flag");
+
+
+        String train_date=DateUtils.getTrainDate(orderRequestDTOJson.getJSONObject("train_date"));
+        String train_no=orderRequestDTOJson.getString("train_no");
+        String stationTrainCode=orderRequestDTOJson.getString("station_train_code");
+        //--seatId
+        String fromStationTelecode=orderRequestDTOJson.getString("from_station_telecode");
+        String toStationTelecode=orderRequestDTOJson.getString("to_station_telecode");
+        String leftTicket=orderRequestDTOJson.getJSONObject("queryLeftTicketRequestDTO").getString("ypInfoDetail");
+        String purpose_codes=orderRequestDTOJson.getString("purpose_codes");
+        String train_location=ticketInfoForPassengerForm.getString("train_location");
+
+
+        //REPEAT_SUBMIT_TOKEN
+
+        JSONObject checkOrderInfoJson=Reservation.checkOrderInfo(seatId,tour_flag, globalRepeatSubmitToken, cancel_flag, bed_level_order_num);
+        if(checkOrderInfoJson.getBoolean("status")){
+            JSONObject checkOrderInfoJsonData=checkOrderInfoJson.getJSONObject("data");
+            if(checkOrderInfoJsonData.getBoolean("submitStatus")){
+                Reservation.getQueueCount(String train_date,String train_no);
+            }
+        }
     }
 }

@@ -15,6 +15,7 @@ public interface Constant {
 
     String CHECKORDERINFOURL="https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
 
+    String QUEUECOUNTURL="https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
 
     String DC="dc";
     String WC="wc";

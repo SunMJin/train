@@ -52,18 +52,34 @@ public class Reservation {
         }
     }
 
-    public static JSONObject getQueueCount(){
-        String queueCountUrl="https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
+    public static JSONObject getQueueCount(String train_date,String train_no,String stationTrainCode,
+                                           String seatType,String fromStationTelecode,String toStationTelecode
+                                            ,String leftTicket,String purpose_codes,String train_location
+                                            ,String REPEAT_SUBMIT_TOKEN) throws HttpException {
+        List<NameValuePair> list=Form.form()
+                .add("train_date", train_date)
+                .add("train_no", train_no)
+                .add("stationTrainCode", stationTrainCode)
+                .add("seatType", seatType)
+                .add("fromStationTelecode", fromStationTelecode)
+                .add("toStationTelecode", toStationTelecode)
+                .add("leftTicket", leftTicket)
+                .add("purpose_codes", purpose_codes)
+                .add("_json_att", "")
+                .add("train_location", train_location)
+                .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN)
+                .add("", "").build();
+        //return httpUtils.Post(Constant.QUEUECOUNTURL,list);
         return null;
     }
 
-    public static JSONObject checkOrderInfo(String tour_flag,String globalRepeatSubmitToken,String cancel_flag,String bed_level_order_num) throws HttpException {
+    public static JSONObject checkOrderInfo(String seatId,String tour_flag,String globalRepeatSubmitToken,String cancel_flag,String bed_level_order_num) throws HttpException {
         return httpUtils.Post(Constant.CHECKORDERINFOURL, Form.form()
                 .add("cancel_flag", cancel_flag)// 固定值
                 .add("bed_level_order_num", bed_level_order_num)// 固定值
                 //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
-                .add("passengerTicketStr", getPassengerTicketStr())// 旅客信息字符串
-                //乘客名,证件类型,证件号,乘客类型
+                .add("passengerTicketStr", getPassengerTicketStr(seatId))// 旅客信息字符串
+
                 .add("oldPassengerStr", oldPassengerStr())// 旅客信息字符串
                 .add("tour_flag", tour_flag)  //ticketInfoForPassengerForm中获取
                 .add("randCode", "")// 验证码
@@ -73,26 +89,13 @@ public class Reservation {
                 .build());
     }
 
-    public static String getPassengerTicketStr(){
-        String aA = "";
+    public static String getPassengerTicketStr(String seatId){
         //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
-        /*for (int aB = 0; aB < limit_tickets.length; aB++) {
-
-        }*/
-        return null;
+        return seatId+",0,"+"1,"+"孙梦金,"+"320322199403184415,"+"13861732734,"+"N";
     }
 
-    /*getpassengerTickets = function() {
-
-                var aA = "";
-                for (var aB = 0; aB < limit_tickets.length; aB++) {
-                    var aC = limit_tickets[aB].seat_type + ",0," + limit_tickets[aB].ticket_type + "," + limit_tickets[aB].name + "," + limit_tickets[aB].id_type + "," + limit_tickets[aB].id_no + "," + (limit_tickets[aB].phone_no == null ? "": limit_tickets[aB].phone_no) + "," + (limit_tickets[aB].save_status == "" ? "N": "Y");
-                    aA += aC + "_"
-                }
-                return aA.substring(0, aA.length - 1)
-            };*/
-
     public static String oldPassengerStr(){
-        return null;
+        //乘客名,证件类型,证件号,乘客类型
+        return "孙梦金,1,320322196501283843,1_";
     }
 }
