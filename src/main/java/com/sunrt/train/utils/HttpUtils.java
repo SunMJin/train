@@ -47,7 +47,7 @@ public class HttpUtils {
     public HttpUtils(boolean isProxyByFiddle,boolean isReadLocalCookies){
         this.isProxyByFiddle=isProxyByFiddle;
         this.isReadLocalCookies=isReadLocalCookies;
-        buildHttpClient(isProxyByFiddle,isReadLocalCookies);
+        httpclient=buildHttpClient(isProxyByFiddle,isReadLocalCookies);
     }
 
     private void resetCookieStore(){
@@ -160,7 +160,7 @@ public class HttpUtils {
         HttpPost httpPost = new HttpPost(uri);
         try{
             if(listParams!=null){
-                httpPost.setEntity(new UrlEncodedFormEntity(listParams));
+                httpPost.setEntity(new UrlEncodedFormEntity(listParams,"utf-8"));
             }
             response = httpclient.execute(httpPost);
             HttpEntity httpEntity=response.getEntity();

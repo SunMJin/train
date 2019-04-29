@@ -1,5 +1,8 @@
 package com.sunrt.train.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 public class CharUtils {
     public static boolean isLetter(char c){
         return (c>='a'&&c<='z') || (c>='A'&&c<='Z');
@@ -37,6 +40,14 @@ public class CharUtils {
             return c;
         }else{
             return 'Q';
+        }
+    }
+
+    public static String URLEncode(String str,String encoding){
+        try {
+            return URLEncoder.encode(str, encoding);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException();
         }
     }
 }

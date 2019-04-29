@@ -110,12 +110,12 @@ public class Login {
             JSONObject json=httpUtils.PostCus(post);
             int result_code=json.getInt("result_code");
             if(result_code==0){
-                httpUtils.Post(Constant.userLogin);
+                httpUtils.PostHtml(Constant.userLogin,null);
                 CloseableHttpResponse response=httpUtils.getResponse();
                 int StatusCode=response.getStatusLine().getStatusCode();
                 if(StatusCode==302){
                     String location=response.getFirstHeader("Location").getValue();
-                    httpUtils.Get(location);
+                    httpUtils.GetHtml(location);
                     JSONObject tkJson=httpUtils.Post(Constant.popup_passport_uamtk,Form.form().add("appid", "otn").build());
                     if(tkJson.getInt("result_code")==0){
                         JSONObject ucJson=httpUtils.Post(Constant.uamauthclient,Form.form().add("tk", tkJson.getString("newapptk")).build());

@@ -5,6 +5,7 @@ import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.exception.VerifcationException;
 import com.sunrt.train.ticket.BuyTicketHandle;
 import com.sunrt.train.ticket.Param;
+import com.sunrt.train.ticket.Stum;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
@@ -106,9 +107,9 @@ public class Captcha {
                             window.dispose();
                             System.out.println(loginInfo);
                             try{
-                                BuyTicketHandle.start(new Param(null,"2019-04-27","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
+                                BuyTicketHandle.start(new Param(new Stum[]{Stum.yz,Stum.ze},"2019-04-30","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
                             }catch (HttpException e2){
-                                System.out.println("任务查询失败！");
+                                System.out.println("任务失败！");
                             }
 
                         }else{
