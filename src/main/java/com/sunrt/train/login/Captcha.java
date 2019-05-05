@@ -107,7 +107,7 @@ public class Captcha {
                             window.dispose();
                             System.out.println(loginInfo);
                             try{
-                                BuyTicketHandle.start(new Param(new Stum[]{Stum.yz,Stum.ze},"2019-04-30","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
+                                BuyTicketHandle.start(new Param(new Stum[]{Stum.ze},"2019-05-05","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
                             }catch (HttpException e2){
                                 System.out.println("任务失败！");
                             }

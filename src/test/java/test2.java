@@ -14,7 +14,7 @@ public class test2 {
             System.out.println("站点初始化失败");
             return;
         }
-        BuyTicketHandle.start(new Param(new Stum[]{Stum.yz,Stum.ze},"2019-05-03","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
+        BuyTicketHandle.start(new Param(new Stum[]{Stum.ze},"2019-05-05","WXH","SHH","ADULT",null,null,null,"无锡","上海","dc"));
         //登陆
       //  Login.testmain();
     }
