@@ -2,7 +2,6 @@ package com.sunrt.train.ticket;
 
 import com.sunrt.train.TrainHttp;
 import com.sunrt.train.data.Cr;
-import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.utils.DateUtils;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.http.NameValuePair;
@@ -15,11 +14,18 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 
+
 public class Reservation {
 
-    private static HttpUtils httpUtils =TrainHttp.getHttp();
 
-    public static String initC(String type) throws HttpException {
+    private static HttpUtils httpUtils= TrainHttp.getInstance();
+
+    private OrderInfo orderInfo;
+    public Reservation(OrderInfo orderInfo){
+        this.orderInfo=orderInfo;
+    }
+
+    public static String initC(String type) {
         List<NameValuePair> lp= Form.form().add("_json_att", "").build();
         String url=null;
         if(type.equals(Constant.DC)){
@@ -27,18 +33,19 @@ public class Reservation {
         }else if(type.equals(Constant.WC)){
             url=Constant.WCURL;
         }
-        return httpUtils.PostHtml(url,lp);
+        return httpUtils.postHtml(url,lp);
     }
 
-    public static JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN) throws HttpException {
-        return httpUtils.Post(Constant.PASSENGERURL, Form.form()
+    public static JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN) {
+        return httpUtils.postJson(Constant.PASSENGERURL, Form.form()
                 .add("_json_att", "")
                 .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN).build());
     }
 
-    public static JSONObject submitOrderRequest(Cr cr,Param p) throws HttpException {
+    public static boolean submitOrderRequest(Cr cr,Param p) {
+        JSONObject json;
         try {
-            return httpUtils.Post(Constant.submitOrderRequest,Form.form()
+            json= httpUtils.postJson(Constant.submitOrderRequest,Form.form()
                     .add("secretStr", URLDecoder.decode( cr.secretStr, Constant.ENCODING))//票id
                     .add("train_date", p.trainDate)//出发日期
                     .add("back_train_date", DateUtils.getToday("yyyy-MM-dd"))//返程日期(单程为查票日期)
@@ -51,104 +58,105 @@ public class Reservation {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException();
         }
+        return json.getBoolean("status");
     }
 
-    public static JSONObject getQueueCount(String train_date,String train_no,String stationTrainCode,
-                                           String seatType,String fromStationTelecode,String toStationTelecode
-                                            ,String leftTicket,String purpose_codes,String train_location
-                                            ,String REPEAT_SUBMIT_TOKEN) throws HttpException {
+    public JSONObject getQueueCount() {
+        JSONObject orderRequestDTOJson=orderInfo.getOrderRequestDTOJson();
+        JSONObject ticketInfoForPassengerForm=orderInfo.getTicketInfoForPassengerForm();
+        String train_date = DateUtils.getTrainDate(orderRequestDTOJson.getJSONObject("train_date"));
+        String train_no = orderRequestDTOJson.getString("train_no");
+        String stationTrainCode = orderRequestDTOJson.getString("station_train_code");
+        String fromStationTelecode = orderRequestDTOJson.getString("from_station_telecode");
+        String toStationTelecode = orderRequestDTOJson.getString("to_station_telecode");
+        String leftTicket = ticketInfoForPassengerForm.getString("leftTicketStr");
+        String purpose_codes = ticketInfoForPassengerForm.getString("purpose_codes");
+        String train_location = ticketInfoForPassengerForm.getString("train_location");
+        String key_check_isChange = ticketInfoForPassengerForm.getString("key_check_isChange");
         List<NameValuePair> list=Form.form()
                 .add("train_date", train_date)
                 .add("train_no", train_no)
                 .add("stationTrainCode", stationTrainCode)
-                .add("seatType", seatType)
+                .add("seatType", orderInfo.getSeatId())
                 .add("fromStationTelecode", fromStationTelecode)
                 .add("toStationTelecode", toStationTelecode)
                 .add("leftTicket", leftTicket)
                 .add("purpose_codes", purpose_codes)
                 .add("_json_att", "")
                 .add("train_location", train_location)
-                .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN)
+                .add("REPEAT_SUBMIT_TOKEN", orderInfo.getGlobalRepeatSubmitToken())
                 .add("", "").build();
-        return httpUtils.Post(Constant.QUEUECOUNTURL,list);
+        return httpUtils.postJson(Constant.QUEUECOUNTURL,list);
     }
 
-    public static JSONObject checkOrderInfo(String tour_flag,String globalRepeatSubmitToken,String cancel_flag,String bed_level_order_num,String PassengerTicketStr,String oldPassengerStr) throws HttpException {
-        return httpUtils.Post(Constant.CHECKORDERINFOURL, Form.form()
-                .add("cancel_flag", cancel_flag)// 固定值
-                .add("bed_level_order_num", bed_level_order_num)// 固定值
+    public JSONObject checkOrderInfo() {
+        return  httpUtils.postJson(Constant.CHECKORDERINFOURL, Form.form()
+                .add("cancel_flag", orderInfo.getCancel_flag())// 固定值
+                .add("bed_level_order_num", orderInfo.getBed_level_order_num())// 固定值
                 //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
-                .add("passengerTicketStr", PassengerTicketStr)// 旅客信息字符串
-
-                .add("oldPassengerStr", oldPassengerStr)// 旅客信息字符串
-                .add("tour_flag", tour_flag)  //ticketInfoForPassengerForm中获取
+                .add("passengerTicketStr", orderInfo.getPassengerTicketStr())// 旅客信息字符串
+                .add("oldPassengerStr", orderInfo.getOldPassengerStr())// 旅客信息字符串
+                .add("tour_flag", orderInfo.getTour_flag())  //ticketInfoForPassengerForm中获取
                 .add("randCode", "")// 验证码
                 .add("whatsSelect", Constant.WHATSELECT)//是否选择了联系人
                 .add("_json_att", "")
-                .add("REPEAT_SUBMIT_TOKEN", globalRepeatSubmitToken)
+                .add("REPEAT_SUBMIT_TOKEN", orderInfo.getGlobalRepeatSubmitToken())
                 .build());
     }
 
-
-    public static JSONObject confirmQueue(String passengerTicketStr,String oldPassengerStr,
-                                          String purpose_codes,String key_check_isChange,String leftTicketStr,
-                                          String train_location,String choose_seats,String seatDetailType,
-                                          String REPEAT_SUBMIT_TOKEN,String ctype) throws HttpException {
+    public JSONObject confirmQueue() {
+        JSONObject ticketInfoForPassengerForm=orderInfo.getTicketInfoForPassengerForm();
+        String leftTicket = ticketInfoForPassengerForm.getString("leftTicketStr");
+        String purpose_codes = ticketInfoForPassengerForm.getString("purpose_codes");
+        String train_location = ticketInfoForPassengerForm.getString("train_location");
+        String key_check_isChange = ticketInfoForPassengerForm.getString("key_check_isChange");
         Form form=Form.form()
-                .add("passengerTicketStr", passengerTicketStr)
-                .add("oldPassengerStr", oldPassengerStr)
+                .add("passengerTicketStr", orderInfo.getPassengerTicketStr())
+                .add("oldPassengerStr", orderInfo.getOldPassengerStr())
                 .add("randCode", "")
                 .add("purpose_codes", purpose_codes)
                 .add("key_check_isChange", key_check_isChange)
-                .add("leftTicketStr", leftTicketStr)
+                .add("leftTicketStr", leftTicket)
                 .add("train_location", train_location)
-                .add("choose_seats", choose_seats)
-                .add("seatDetailType", seatDetailType)
+                .add("choose_seats", "")
+                .add("seatDetailType", "000")
                 .add("whatsSelect", "1")
                 .add("roomType", "00")
                 .add("_json_att", "")
-                .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN);
+                .add("REPEAT_SUBMIT_TOKEN", orderInfo.getGlobalRepeatSubmitToken());
         String url=null;
+        String ctype=orderInfo.getTour_flag();
         if(ctype.equals(Constant.DC)){
             url=Constant.DCQUEUE;
             form.add("dwAll","N");
         }else if(ctype.equals(Constant.WC)){
             url=Constant.WCQUEUE;
         }
-        return httpUtils.Post(url,form.build() );
+        return httpUtils.postJson(url,form.build() );
     }
 
 
-    public static JSONObject queryOrderWaitTime(String tourFlag,String REPEAT_SUBMIT_TOKEN) throws HttpException {
+    public JSONObject queryOrderWaitTime() {
         List<NameValuePair> list=Form.form()
                 .add("random",String.valueOf(new Date().getTime()))
-                .add("tourFlag", tourFlag)
+                .add("tourFlag", orderInfo.getTour_flag())
                 .add("_json_att", "")
-                .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN)
+                .add("REPEAT_SUBMIT_TOKEN", orderInfo.getGlobalRepeatSubmitToken())
                 .build();
-        return httpUtils.Post(Constant.QUERYORDERWAITTIME, list);
+        return httpUtils.postJson(Constant.QUERYORDERWAITTIME, list);
     }
 
-    public static JSONObject resultOrderForWcQueue(String orderSequence_no,String REPEAT_SUBMIT_TOKEN) throws HttpException {
+    public JSONObject resultOrderForWcQueue(String orderSequence_no) {
         List<NameValuePair> list=Form.form()
                 .add("orderSequence_no",orderSequence_no)
                 .add("_json_att", "")
-                .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN)
+                .add("REPEAT_SUBMIT_TOKEN", orderInfo.getGlobalRepeatSubmitToken())
                 .build();
-        return httpUtils.Post(Constant.RESULTORDERURL, list);
+        return httpUtils.postJson(Constant.RESULTORDERURL, list);
     }
 
-    public static String getPassengerTicketStr(String seatId){
-        if(seatId==null){
-            throw new NullPointerException();
-        }
-        //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
-        return seatId+",0,"+"1,孙梦金,1,"+"320322199403184415,"+"13861732734,"+"N";
-    }
 
-    public static String oldPassengerStr(){
-        //乘客名,证件类型,证件号,乘客类型
-        return "孙梦金,1,320322199403184415,1_";
-    }
+
+
 
 }

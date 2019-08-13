@@ -1,6 +1,5 @@
 package com.sunrt.train.utils;
 
-import com.sunrt.train.exception.HttpException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
@@ -10,7 +9,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -18,21 +16,24 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
 public class HttpUtils {
 
-    public static final String COOKIESFILEPATH="d:"+File.separator+"obj";
-    
-    private CookieStore cookieStore;
-    public CookieStore getCookieStore() {
-        return cookieStore;
+    private String host;
+    private Integer port;
+
+    private String encoding="UTF-8";
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
     }
 
     private CloseableHttpClient httpclient;
@@ -40,57 +41,53 @@ public class HttpUtils {
     public CloseableHttpResponse getResponse() {
         return response;
     }
-
+    private CookieStore cookieStore;
     private boolean isProxyByFiddle;
-    private boolean isReadLocalCookies;
+    public final static File cookiesFile= new File("cookies");
 
-    public HttpUtils(boolean isProxyByFiddle,boolean isReadLocalCookies){
+    public HttpUtils(){
+        httpclient=buildHttpClient();
+    }
+
+    public HttpUtils(boolean isProxyByFiddle,String host,Integer port){
         this.isProxyByFiddle=isProxyByFiddle;
-        this.isReadLocalCookies=isReadLocalCookies;
-        httpclient=buildHttpClient(isProxyByFiddle,isReadLocalCookies);
+        this.host=host;
+        this.port=port;
+        httpclient=buildHttpClient();
     }
 
-    private void resetCookieStore(){
-        cookieStore=new BasicCookieStore();
-    }
-
-    private CloseableHttpClient buildHttpClient(boolean isProxyByFiddle,boolean isReadLocalCookies) {
-        if(isReadLocalCookies){
-            File cookiesFile=new File(COOKIESFILEPATH);
-            if(cookiesFile.exists()){
-                try {
-                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cookiesFile));
-                    cookieStore=(CookieStore)ois.readObject();
-                    ois.close();
-                } catch (IOException e) {
-                    throw new RuntimeException();
-                } catch (ClassNotFoundException e){
-                    throw new RuntimeException();
-                }
-            }else{
-                resetCookieStore();
-            }
-        }else{
-            resetCookieStore();
+    public void saveCookies(){
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(cookiesFile));){
+            objectOutputStream.writeObject(cookieStore);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    private void loadCookies(){
+        if(!cookiesFile.exists()){
+            cookieStore=new BasicCookieStore();
+            return;
+        }
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(cookiesFile));){
+            cookieStore=(CookieStore)inputStream.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private CloseableHttpClient buildHttpClient() {
+        loadCookies();
         HttpClientBuilder hb =HttpClients.custom().setDefaultCookieStore(cookieStore);
         if(isProxyByFiddle){
             hb.setSSLSocketFactory(SSLUtils.trustAllHttpsCertificates())
-                    .setProxy(new HttpHost("127.0.0.1",8888));
+                    .setProxy(new HttpHost(host,port));
         }
         return hb.build();
     }
 
-    public void resetHttp(){
-        resetCookieStore();
-        httpclient= buildHttpClient(isProxyByFiddle,isReadLocalCookies);
-    }
-
-    public void PRCookies() {
-        List<Cookie> cookies=cookieStore.getCookies();
-        for(Cookie c:cookies){
-            System.out.println(c.getName()+":"+c.getValue());
-        }
+    public void reset(){
+        httpclient= buildHttpClient();
     }
 
     private URI buildURI(String uri, List<NameValuePair> listParams) {
@@ -108,15 +105,15 @@ public class HttpUtils {
         }
     }
 
-    public JSONObject Get(String uri) throws HttpException {
+    public JSONObject Get(String uri) {
         return Get(uri,null);
     }
 
-    public JSONObject Get(String uri, List<NameValuePair> listParams) throws HttpException {
+    public JSONObject Get(String uri, List<NameValuePair> listParams) {
         return new JSONObject(GetHtml(uri,listParams));
     }
 
-    public String GetHtml(String uri, List<NameValuePair> listParams) throws HttpException {
+    public String GetHtml(String uri, List<NameValuePair> listParams) {
         HttpGet httpGet = new HttpGet(buildURI(uri,listParams));
         try {
             response = httpclient.execute(httpGet);
@@ -124,52 +121,54 @@ public class HttpUtils {
             String content=EntityUtils.toString(httpEntity);
             EntityUtils.consume(httpEntity);
             return content;
-        } catch (IOException e) {
-            throw new HttpException(uri);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
-    public String GetHtml(String uri) throws HttpException {
+    public String GetHtml(String uri) {
         return GetHtml(uri,null);
     }
 
-    public JSONObject Post(String uri) throws HttpException {
-        return Post(uri,null);
+    public JSONObject PostJson(String uri) {
+        return postJson(uri,null);
     }
 
-    public JSONObject PostCus(HttpPost httpPost) throws HttpException {
+    public JSONObject PostCus(HttpPost httpPost) {
         try {
             response = httpclient.execute(httpPost);
             HttpEntity httpEntity=response.getEntity();
             String content=EntityUtils.toString(httpEntity);
             EntityUtils.consume(httpEntity);
             return new JSONObject(content);
-        } catch (IOException e) {
-            throw new HttpException(httpPost.getURI().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
-    public JSONObject Post(String uri, List<NameValuePair> listParams) throws HttpException {
-        return new JSONObject(PostHtml(uri,listParams));
+    public JSONObject postJson(String uri, List<NameValuePair> listParams) {
+        return new JSONObject(postHtml(uri,listParams));
     }
 
-    public String PostHtml(String uri, List<NameValuePair> listParams) throws HttpException {
+    public String postHtml(String uri, List<NameValuePair> listParams) {
         if(uri==null){
             throw new NullPointerException();
         }
         HttpPost httpPost = new HttpPost(uri);
-        try{
+        try {
             if(listParams!=null){
-                httpPost.setEntity(new UrlEncodedFormEntity(listParams,"utf-8"));
+                httpPost.setEntity(new UrlEncodedFormEntity(listParams,encoding));
             }
             response = httpclient.execute(httpPost);
             HttpEntity httpEntity=response.getEntity();
             String content=EntityUtils.toString(httpEntity);
             EntityUtils.consume(httpEntity);
             return content;
-        }catch(IOException e){
-            throw new HttpException(uri);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
-
 }

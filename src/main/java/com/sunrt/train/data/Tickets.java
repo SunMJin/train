@@ -1,7 +1,6 @@
 package com.sunrt.train.data;
 
 import com.sunrt.train.TrainHttp;
-import com.sunrt.train.exception.HttpException;
 import com.sunrt.train.ticket.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,9 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tickets {
-    private static HttpUtils httpUtils = TrainHttp.getHttp();
 
-    public static List<Cr> searchTickets(Param p) throws HttpException {
+
+    private static HttpUtils httpUtils= TrainHttp.getInstance();
+
+    public static List<Cr> searchTickets(Param p) {
         if(p==null){
             throw new NullPointerException();
         }

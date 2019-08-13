@@ -8,14 +8,6 @@ public class Proority {
     public int proorityDigit;
     public ProorityEnum proorityId;
 
-    @Override
-    public String toString() {
-        return "Proority{" +
-                "proorityDigit=" + proorityDigit +
-                ", proorityId=" + proorityId +
-                '}';
-    }
-
     public Proority(int proorityDigit, ProorityEnum proorityId) {
         this.proorityDigit = proorityDigit;
         this.proorityId = proorityId;
@@ -35,12 +27,7 @@ public class Proority {
             list.add(new Proority(Integer.parseInt(p.getProperty("starttime")),ProorityEnum.starttime));
             list.add(new Proority(Integer.parseInt(p.getProperty("arrivetime")),ProorityEnum.arrivetime));
             list.add(new Proority(Integer.parseInt(p.getProperty("lishi")),ProorityEnum.lishi));
-            Collections.sort(list, new Comparator<Proority>() {
-                @Override
-                public int compare(Proority p1, Proority p2) {
-                    return p1.proorityDigit-p2.proorityDigit;
-                }
-            });
+            Collections.sort(list, Comparator.comparingInt(p2 -> p2.proorityDigit));
             Proority proorities[]=new Proority[list.size()];
             list.toArray(proorities);
             return proorities;

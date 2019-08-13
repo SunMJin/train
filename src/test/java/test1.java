@@ -1,51 +1,25 @@
-import com.sunrt.train.login.Captcha;
-import com.sunrt.train.login.Login;
+import org.apache.http.client.CookieStore;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.cookie.BasicClientCookie;
+
+import java.io.*;
 
 public class test1 {
 
-    public static void testLogin(){
-        Login login=new Login();
-        Captcha captcha=new Captcha();
-        captcha.createPassCode();
-        String username="1036524012@qq.com";
-        login.setUsername(username);
-        char pw[]=new String("lol9403J").toCharArray();
-        login.setPassword(pw);
-        captcha.setVisible(true);
-    }
-
-
-
-
-    public static void main(String[] args) {
-
-        //System.out.println("请输入到达站名称：");
-        //String to_station=sc.nextLine();
-
-        /*Integer index=null;
-        while(true){
-            try{
-                index=Integer.parseInt(sc.nextLine());
-                if(index<0||index>sts.length-1){
-                    System.out.println("请指定一个有效的数字");
-                }else{
-                    break;
-                }
-            }catch (NumberFormatException e){
-                System.out.println("无效的输入");
-            }
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        CookieStore cs=new BasicCookieStore();
+        String file="cookies";
+//        ObjectOutputStream os=new ObjectOutputStream(new FileOutputStream(file));
+//        os.writeObject(cs);
+//        os.close();
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));){
+            CookieStore ck=(CookieStore)inputStream.readObject();
+            System.out.println(ck);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        List<Cr> list= Tickets.search(train_date,from_station,to_station,"ADULT");
-        for(Cr cr:list){
-            Cp cp=cr.queryLeftNewDTO;
-            if("Y".equals(cp.canWebBuy)){
-                String countStr=getSeatCountStr(sts[index].stum,cp);
-                if(countStr!=null){
-                    System.out.println(cr.queryLeftNewDTO.station_train_code+":  "+countStr);
-                }
-            }
-        }*/
-
+        System.out.println();
     }
 }
