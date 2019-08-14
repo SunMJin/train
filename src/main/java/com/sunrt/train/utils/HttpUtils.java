@@ -73,6 +73,7 @@ public class HttpUtils {
             cookieStore=(CookieStore)inputStream.readObject();
         } catch (Exception e) {
             e.printStackTrace();
+            cookieStore=new BasicCookieStore();
         }
     }
 

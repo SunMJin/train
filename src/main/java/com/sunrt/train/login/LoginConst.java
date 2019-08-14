@@ -1,6 +1,6 @@
 package com.sunrt.train.login;
 
-public interface Constant {
+public interface LoginConst {
     String popup_passport_appId = "otn";
     String popup_passport_baseUrl = "https://kyfw.12306.cn/passport/";
     String popup_passport_login = popup_passport_baseUrl + "web/login";

@@ -1,8 +1,7 @@
-package com.sunrt.train.service;
+package com.sunrt.train.login;
 
 import com.sunrt.train.TrainHttp;
 import com.sunrt.train.data.TrainConf;
-import com.sunrt.train.login.Constant;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
@@ -15,14 +14,14 @@ import java.nio.file.Paths;
 import java.util.Date;
 
 
-public class CaptchaServiceImpl {
+public class CaptchaService {
 
-    private CaptchaServiceImpl(){}
-    private static CaptchaServiceImpl captchaService;
+    private CaptchaService(){}
+    private static CaptchaService captchaService;
 
-    public static CaptchaServiceImpl getInstance(){
+    public static CaptchaService getInstance(){
         if(captchaService==null){
-            captchaService=new CaptchaServiceImpl();
+            captchaService=new CaptchaService();
         }
         return captchaService;
     }
@@ -86,7 +85,7 @@ public class CaptchaServiceImpl {
     private String downloadCode() {
         long temp = new Date().getTime();
         try {
-            JSONObject json = httpUtils.Get(Constant.popup_passport_captcha + temp);
+            JSONObject json = httpUtils.Get(LoginConst.popup_passport_captcha + temp);
             ByteArrayInputStream in=new ByteArrayInputStream(Base64.decodeBase64(json.getString("image")));
             Path path= Paths.get(TrainConf.captchaDownPath);
             if(!Files.exists(path)){
@@ -104,9 +103,9 @@ public class CaptchaServiceImpl {
 
 
     public boolean checkPassCode(String randCode){
-        JSONObject json = httpUtils.Get(Constant.popup_passport_captcha_check+"?answer="+randCode+"&&rand=sjrand&&login_site=E");
+        JSONObject json = httpUtils.Get(LoginConst.popup_passport_captcha_check+"?answer="+randCode+"&&rand=sjrand&&login_site=E");
         String result_code=json.getString("result_code");
-        if(Constant.checkSuccessCode.equalsIgnoreCase(result_code)){
+        if(LoginConst.checkSuccessCode.equalsIgnoreCase(result_code)){
             return true;
         }else{
             return false;

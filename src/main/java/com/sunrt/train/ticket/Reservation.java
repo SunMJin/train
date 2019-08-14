@@ -72,7 +72,7 @@ public class Reservation {
         String leftTicket = ticketInfoForPassengerForm.getString("leftTicketStr");
         String purpose_codes = ticketInfoForPassengerForm.getString("purpose_codes");
         String train_location = ticketInfoForPassengerForm.getString("train_location");
-        String key_check_isChange = ticketInfoForPassengerForm.getString("key_check_isChange");
+        //String key_check_isChange = ticketInfoForPassengerForm.getString("key_check_isChange");
         List<NameValuePair> list=Form.form()
                 .add("train_date", train_date)
                 .add("train_no", train_no)

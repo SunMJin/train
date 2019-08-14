@@ -31,7 +31,6 @@ public class Context {
         seatId=getSeatId();
     }
 
-
     private String seatId;
     private String tour_flag;
     private String globalRepeatSubmitToken;
@@ -45,8 +44,6 @@ public class Context {
     //ticketInfoForPassengerForm.getJSONArray("cardTypes");
     //票类型
     //JSONArray ticket_type_codes=limitBuySeatTicketDTOJson.getJSONArray("ticket_type_codes");
-
-
 
     public String getGlobalRepeatSubmitToken(){
         return RegUtils.getStrByReg("(?<=globalRepeatSubmitToken = \')[^\']+", html);
@@ -74,7 +71,6 @@ public class Context {
         //获取座位的id
         return Seats.getSeatId(st, get_seat_type_codes());
     }
-
 
     public List<OrderInfo> getOrderInfos(){
         List<OrderInfo> list=new ArrayList<>();
@@ -109,6 +105,7 @@ public class Context {
                     //座位编号,0,票类型,乘客名,证件类型,证件号,手机号码,保存常用联系人(Y或N)
                     orderInfo.setPassengerTicketStr(seatId+",0,"+"1,"+pname+",1,"+""+pin+","+""+mobile_no+","+"N,"+allEncStr);
                     orderInfo.setOldPassengerStr(pname+",1,"+pin+",1_");
+                    orderInfo.setSeatId(seatId);
                     orderInfo.setTicketInfoForPassengerForm(ticketInfoForPassengerForm);
                     list.add(orderInfo);
                 }
