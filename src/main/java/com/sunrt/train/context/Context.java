@@ -27,7 +27,7 @@ public class Context {
         }
         globalRepeatSubmitToken=getGlobalRepeatSubmitToken();
         ticketInfoForPassengerForm = RegUtils.getJSONByReg("(?<=ticketInfoForPassengerForm=).*(?=;)", html);
-        //JSONObject limitBuySeatTicketDTOJson = ticketInfoForPassengerForm.getJSONObject("limitBuySeatTicketDTO");
+        limitBuySeatTicketDTOJson = ticketInfoForPassengerForm.getJSONObject("limitBuySeatTicketDTO");
         orderRequestDTOJson = ticketInfoForPassengerForm.getJSONObject("orderRequestDTO");
         tour_flag = orderRequestDTOJson.getString("tour_flag");
         cancel_flag = Constant.CANCELFLOG;
@@ -43,19 +43,18 @@ public class Context {
     private JSONObject orderRequestDTOJson;
     private JSONObject ticketInfoForPassengerForm;
     private String allEncStr;
+    private JSONObject limitBuySeatTicketDTOJson;
 
     //证件类型
     //ticketInfoForPassengerForm.getJSONArray("cardTypes");
     //票类型
     //JSONArray ticket_type_codes=limitBuySeatTicketDTOJson.getJSONArray("ticket_type_codes");
 
-    public String getGlobalRepeatSubmitToken(){
+    private String getGlobalRepeatSubmitToken(){
         return RegUtils.getStrByReg("(?<=globalRepeatSubmitToken = \')[^\']+", html);
     }
 
-    public JSONArray get_seat_type_codes(){
-        JSONObject ticketInfoForPassengerForm = RegUtils.getJSONByReg("(?<=ticketInfoForPassengerForm=).*(?=;)", html);
-        JSONObject limitBuySeatTicketDTOJson = ticketInfoForPassengerForm.getJSONObject("limitBuySeatTicketDTO");
+    private JSONArray get_seat_type_codes(){
         //座位类型
         return limitBuySeatTicketDTOJson.getJSONArray("seat_type_codes");
     }
@@ -69,7 +68,7 @@ public class Context {
         return null;
     }
 
-    public String getSeatId(){
+    private String getSeatId(){
         //确定购买座位类型
         String st = Seats.confirmSeatType(param.st, cr);
         //获取座位的id

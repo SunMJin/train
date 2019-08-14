@@ -22,7 +22,6 @@ public class Application {
             System.out.println("开始登录...");
             String loginInfo=loginService.login(TrainConf.username,TrainConf.password);
             System.out.println(loginInfo);
-            captchaService.close();
         }
         System.out.println("开始购票...");
         TicketService ticketService=TicketService.getInstance();

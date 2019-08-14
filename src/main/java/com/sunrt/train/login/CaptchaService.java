@@ -46,8 +46,7 @@ public class CaptchaService {
         return false;
     }
 
-
-    public void close(){
+    private void close(){
         try {
             if(br!=null){
                 br.close();
@@ -61,9 +60,7 @@ public class CaptchaService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 
     public String getPoints(String file) {
         try {
@@ -74,6 +71,8 @@ public class CaptchaService {
             return new String(buff, 0,len);
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            close();
         }
         return null;
     }

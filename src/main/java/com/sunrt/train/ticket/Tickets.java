@@ -3,6 +3,8 @@ package com.sunrt.train.ticket;
 import com.sunrt.train.TrainHttp;
 import com.sunrt.train.bean.Cp;
 import com.sunrt.train.bean.Cr;
+import com.sunrt.train.bean.OrderInfo;
+import com.sunrt.train.conf.TrainConf;
 import com.sunrt.train.constant.QueryTicketConstant;
 import com.sunrt.train.bean.Param;
 import com.sunrt.train.utils.HttpUtils;
@@ -10,15 +12,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Form;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tickets {
 
-
     private static HttpUtils httpUtils= TrainHttp.getInstance();
-
     public static List<Cr> searchTickets(Param p) {
         if(p==null){
             throw new NullPointerException();
@@ -85,5 +84,54 @@ public class Tickets {
             cN.add(cR);
         }
         return cN;
+    }
+
+    public static void buy(OrderInfo orderInfo) {
+        Reservation reservation=new Reservation(orderInfo);
+        JSONObject checkOrderInfoJson = reservation.checkOrderInfo();
+        if (checkOrderInfoJson.getBoolean("status")) {
+            JSONObject checkOrderInfoJsonData = checkOrderInfoJson.getJSONObject("data");
+            if (checkOrderInfoJsonData.getBoolean("submitStatus")) {
+                //查询余票
+                JSONObject queueCountJson = reservation.getQueueCount();
+                if (queueCountJson.getBoolean("status")) {
+                    JSONObject queueCountData = queueCountJson.getJSONObject("data");
+                    String tiket=queueCountData.getString("ticket");
+                    int count = Integer.parseInt(tiket.split(",")[0]);
+                    System.out.println(TrainConf.seatType+"剩余："+count+"张");
+                    if (count > 0) {
+                        //进入下单队列
+                        JSONObject confirmQueueJson = reservation.confirmQueue();
+                        System.out.println("已进入下单队列");
+                        if (confirmQueueJson.getBoolean("status") && confirmQueueJson.getJSONObject("data").getBoolean("submitStatus")) {
+                            String orderId;
+                            while (true) {
+                                //轮询订单状态
+                                JSONObject queryOrderWaitTimeJson = reservation.queryOrderWaitTime();
+                                if (queryOrderWaitTimeJson.getBoolean("status")) {
+                                    orderId = queryOrderWaitTimeJson.getJSONObject("data").getString("orderId");
+                                    if (StringUtils.isNotEmpty(orderId)) {
+                                        System.out.println("已下单！");
+                                        break;
+                                    }
+                                }
+                                try {
+                                    Thread.sleep(3000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            //查询最终结果
+                            if(reservation.resultOrderForDcQueue(orderId)){
+                                System.out.println("订单已完成！请及时支付！");
+                            }
+
+                        }
+                    }
+                }
+            } else {
+                System.out.println(checkOrderInfoJsonData);
+            }
+        }
     }
 }
