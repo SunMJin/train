@@ -19,7 +19,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 
-
 public class LoginService {
     private static LoginService loginService;
     private LoginService(){};
@@ -27,7 +26,6 @@ public class LoginService {
         if(loginService==null){
             loginService=new LoginService();
         }
-        loginService.deviceId=getDeviceId();
         return loginService;
     }
     private HttpUtils httpUtils = TrainHttp.getInstance();
@@ -35,7 +33,6 @@ public class LoginService {
     private String username;
     private String password;
     private String successInfo;
-    private String deviceId;
 
     public static String getDeviceId() {
         ChromeOptions chromeOptions = new ChromeOptions();
@@ -47,9 +44,8 @@ public class LoginService {
         while(true){
             Set<Cookie> cookies=driver.manage().getCookies();
             for(Cookie cookie:cookies){
-                System.out.println(cookie.getName()+":"+cookie.getValue());
                 if("RAIL_DEVICEID".equals(cookie.getName())){
-                    System.out.println();
+                    System.out.println(cookie);
                     driver.quit();
                     return cookie.getValue();
                 }
@@ -89,7 +85,7 @@ public class LoginService {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        post.addHeader("Cookie", "RAIL_DEVICEID=" + deviceId);
+        post.addHeader("Cookie", "RAIL_DEVICEID=" + getDeviceId());
         JSONObject json = httpUtils.PostCus(post);
         int result_code = json.getInt("result_code");
         if (result_code == 0) {

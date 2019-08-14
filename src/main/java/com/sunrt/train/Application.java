@@ -1,11 +1,8 @@
 package com.sunrt.train;
 
-import com.sunrt.train.context.Stations;
 import com.sunrt.train.conf.TrainConf;
-import com.sunrt.train.login.LoginService;
 import com.sunrt.train.login.CaptchaService;
-import com.sunrt.train.bean.Param;
-import com.sunrt.train.ticket.TicketService;
+import com.sunrt.train.login.LoginService;
 
 public class Application {
     public static void main(String[] args) {
@@ -23,7 +20,8 @@ public class Application {
             String loginInfo=loginService.login(TrainConf.username,TrainConf.password);
             System.out.println(loginInfo);
         }
-        System.out.println("登录成功！");
+        if(loginService.checkUser())
+            System.out.println("登录成功！");
         /*System.out.println("开始购票...");
         TicketService ticketService=TicketService.getInstance();
         ticketService.start(new Param(TrainConf.seatType,
