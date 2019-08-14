@@ -1,4 +1,4 @@
-package com.sunrt.train.login;
+package com.sunrt.train.constant;
 
 public interface LoginConst {
     String popup_passport_appId = "otn";

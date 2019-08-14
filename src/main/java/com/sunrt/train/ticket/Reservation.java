@@ -1,7 +1,9 @@
 package com.sunrt.train.ticket;
 
 import com.sunrt.train.TrainHttp;
-import com.sunrt.train.data.Cr;
+import com.sunrt.train.bean.Cr;
+import com.sunrt.train.bean.OrderInfo;
+import com.sunrt.train.bean.Param;
 import com.sunrt.train.utils.DateUtils;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.http.NameValuePair;
@@ -42,7 +44,7 @@ public class Reservation {
                 .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN).build());
     }
 
-    public static boolean submitOrderRequest(Cr cr,Param p) {
+    public static boolean submitOrderRequest(Cr cr, Param p) {
         JSONObject json;
         try {
             json= httpUtils.postJson(Constant.submitOrderRequest,Form.form()
@@ -146,13 +148,19 @@ public class Reservation {
         return httpUtils.postJson(Constant.QUERYORDERWAITTIME, list);
     }
 
-    public JSONObject resultOrderForWcQueue(String orderSequence_no) {
+    public boolean resultOrderForDcQueue(String orderSequence_no) {
         List<NameValuePair> list=Form.form()
                 .add("orderSequence_no",orderSequence_no)
                 .add("_json_att", "")
                 .add("REPEAT_SUBMIT_TOKEN", orderInfo.getGlobalRepeatSubmitToken())
                 .build();
-        return httpUtils.postJson(Constant.RESULTORDERURL, list);
+        JSONObject json=httpUtils.postJson(Constant.RESULTORDERURL, list);
+        if (json.getBoolean("status")) {
+            if (json.getJSONObject("data").getBoolean("submitStatus")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

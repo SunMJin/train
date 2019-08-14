@@ -1,4 +1,4 @@
-package com.sunrt.train.data;
+package com.sunrt.train.conf;
 
 import org.apache.commons.lang3.StringUtils;
 

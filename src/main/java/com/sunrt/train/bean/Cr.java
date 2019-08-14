@@ -1,4 +1,4 @@
-package com.sunrt.train.data;
+package com.sunrt.train.bean;
 
 public class Cr {
     public String secretStr;

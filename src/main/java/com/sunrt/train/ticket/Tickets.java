@@ -1,7 +1,10 @@
-package com.sunrt.train.data;
+package com.sunrt.train.ticket;
 
 import com.sunrt.train.TrainHttp;
-import com.sunrt.train.ticket.Param;
+import com.sunrt.train.bean.Cp;
+import com.sunrt.train.bean.Cr;
+import com.sunrt.train.constant.QueryTicketConstant;
+import com.sunrt.train.bean.Param;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Form;
@@ -21,7 +24,7 @@ public class Tickets {
             throw new NullPointerException();
         }
         JSONObject json_result = httpUtils.Get(
-                Constant.QUERYURL, Form.form()
+                QueryTicketConstant.QUERYURL, Form.form()
                         .add("leftTicketDTO.train_date",p.trainDate)
                         .add("leftTicketDTO.from_station",p.from_sta)
                         .add("leftTicketDTO.to_station",p.to_sta)

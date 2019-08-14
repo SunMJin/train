@@ -1,6 +1,6 @@
-package com.sunrt.train.ticket;
-import com.sunrt.train.data.Cp;
-import com.sunrt.train.data.Cr;
+package com.sunrt.train.context;
+import com.sunrt.train.bean.Cp;
+import com.sunrt.train.bean.Cr;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 

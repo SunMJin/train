@@ -1,16 +1,18 @@
 package com.sunrt.train.ticket;
 
-import com.sunrt.train.data.Cp;
-import com.sunrt.train.data.Cr;
+import com.sunrt.train.bean.Cp;
+import com.sunrt.train.bean.Cr;
+import com.sunrt.train.bean.Param;
+import com.sunrt.train.context.Proority;
+import com.sunrt.train.context.Seats;
 import com.sunrt.train.utils.CharUtils;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 public class SelectTickets {
-    public static List<Cr> retrieve(List<Cr> list,Param p){
+    public static List<Cr> retrieve(List<Cr> list, Param p){
         if(list==null||p==null){
             throw new NullPointerException();
         }
@@ -38,7 +40,7 @@ public class SelectTickets {
             if(st!=null){
                 boolean flag=false;
                 for(int i=0;i<st.length;i++){
-                    String count=Seats.getSeatCount(st[i],cp);
+                    String count= Seats.getSeatCount(st[i],cp);
                     if(count!=null){
                         flag=true;
                         break;

@@ -1,4 +1,4 @@
-package com.sunrt.train.ticket;
+package com.sunrt.train.bean;
 
 import org.json.JSONObject;
 

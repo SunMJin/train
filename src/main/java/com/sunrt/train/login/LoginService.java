@@ -1,7 +1,8 @@
 package com.sunrt.train.login;
 
 import com.sunrt.train.TrainHttp;
-import com.sunrt.train.data.TrainConf;
+import com.sunrt.train.constant.LoginConst;
+import com.sunrt.train.conf.TrainConf;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;

@@ -1,13 +1,11 @@
-package com.sunrt.train.data;
+package com.sunrt.train.context;
 
 import com.sunrt.train.TrainHttp;
+import com.sunrt.train.constant.QueryTicketConstant;
 import com.sunrt.train.utils.FileUtils;
 import com.sunrt.train.utils.HttpUtils;
 import com.sunrt.train.utils.PropertiesUtil;
 import com.sunrt.train.utils.RegUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Stations {
     private static HttpUtils httpUtils = TrainHttp.getInstance();
@@ -34,14 +32,14 @@ public class Stations {
     }
 
     private static String updateStations() {
-        String stationsStr = httpUtils.GetHtml(Constant.STATIONSURL+sta_ver);
+        String stationsStr = httpUtils.GetHtml(QueryTicketConstant.STATIONSURL+sta_ver);
         FileUtils.writeText(sta_filename,stationsStr);
         PropertiesUtil.writeValueByFile(ver_filename, sta_ver_key, sta_ver);
         return stationsStr;
     }
 
     private static boolean isNewVer(){
-        String html = httpUtils.GetHtml(Constant.INIT);
+        String html = httpUtils.GetHtml(QueryTicketConstant.INIT);
         sta_ver=RegUtils.getStrByReg("(?<=station_version=)[0-9]+([.][0-9]+)*", html);
         double ver_new=Double.valueOf(sta_ver);
         double ver_old=Double.valueOf(PropertiesUtil.getValueByFile(ver_filename,sta_ver_key));

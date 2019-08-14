@@ -1,10 +1,10 @@
 package com.sunrt.train;
 
-import com.sunrt.train.data.Stations;
-import com.sunrt.train.data.TrainConf;
+import com.sunrt.train.context.Stations;
+import com.sunrt.train.conf.TrainConf;
 import com.sunrt.train.login.LoginService;
 import com.sunrt.train.login.CaptchaService;
-import com.sunrt.train.ticket.Param;
+import com.sunrt.train.bean.Param;
 import com.sunrt.train.ticket.TicketService;
 
 public class Application {

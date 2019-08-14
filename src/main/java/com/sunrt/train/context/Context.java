@@ -1,7 +1,11 @@
-package com.sunrt.train.ticket;
+package com.sunrt.train.context;
 
-import com.sunrt.train.data.Cr;
-import com.sunrt.train.data.TrainConf;
+import com.sunrt.train.bean.Cr;
+import com.sunrt.train.bean.OrderInfo;
+import com.sunrt.train.conf.TrainConf;
+import com.sunrt.train.ticket.Constant;
+import com.sunrt.train.bean.Param;
+import com.sunrt.train.ticket.Reservation;
 import com.sunrt.train.utils.RegUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;

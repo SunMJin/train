@@ -1,8 +1,10 @@
 package com.sunrt.train.ticket;
 
-import com.sunrt.train.data.Cr;
-import com.sunrt.train.data.Tickets;
-import com.sunrt.train.data.TrainConf;
+import com.sunrt.train.bean.Cr;
+import com.sunrt.train.bean.OrderInfo;
+import com.sunrt.train.bean.Param;
+import com.sunrt.train.conf.TrainConf;
+import com.sunrt.train.context.Context;
 import com.sunrt.train.login.LoginService;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -73,6 +75,7 @@ public class TicketService {
                     if (count > 0) {
                         //进入下单队列
                         JSONObject confirmQueueJson = reservation.confirmQueue();
+                        System.out.println("已进入下单队列");
                         if (confirmQueueJson.getBoolean("status") && confirmQueueJson.getJSONObject("data").getBoolean("submitStatus")) {
                             String orderId;
                             while (true) {
@@ -92,12 +95,10 @@ public class TicketService {
                                 }
                             }
                             //查询最终结果
-                            JSONObject resultOrderForWcQueueJson = reservation.resultOrderForWcQueue(orderId);
-                            if (resultOrderForWcQueueJson.getBoolean("status")) {
-                                if (resultOrderForWcQueueJson.getJSONObject("data").getBoolean("submitStatus")) {
-                                    System.out.println("下单状态成功！");
-                                }
+                            if(reservation.resultOrderForDcQueue(orderId)){
+                                System.out.println("订单已完成！请及时支付！");
                             }
+
                         }
                     }
                 }
