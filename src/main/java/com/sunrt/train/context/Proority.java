@@ -13,7 +13,7 @@ public class Proority {
         this.proorityId = proorityId;
     }
 
-    enum ProorityEnum{
+    public enum ProorityEnum{
         traintype,seattype,starttime,arrivetime,lishi
     }
 

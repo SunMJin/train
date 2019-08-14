@@ -23,10 +23,11 @@ public class Application {
             String loginInfo=loginService.login(TrainConf.username,TrainConf.password);
             System.out.println(loginInfo);
         }
-        System.out.println("开始购票...");
+        System.out.println("登录成功！");
+        /*System.out.println("开始购票...");
         TicketService ticketService=TicketService.getInstance();
         ticketService.start(new Param(TrainConf.seatType,
                 TrainConf.trainDate,Stations.getCode(TrainConf.fromSta), Stations.getCode(TrainConf.toSta),
-                TrainConf.trainType,TrainConf.starttime, TrainConf.arrTime,TrainConf.fromSta,TrainConf.toSta));
+                TrainConf.trainType,TrainConf.starttime, TrainConf.arrTime,TrainConf.fromSta,TrainConf.toSta));*/
     }
 }

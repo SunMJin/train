@@ -10,9 +10,14 @@ import org.apache.http.client.fluent.Form;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
+import org.openqa.selenium.Cookie;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Set;
 
 
 public class LoginService {
@@ -22,6 +27,7 @@ public class LoginService {
         if(loginService==null){
             loginService=new LoginService();
         }
+        loginService.deviceId=getDeviceId();
         return loginService;
     }
     private HttpUtils httpUtils = TrainHttp.getInstance();
@@ -29,7 +35,27 @@ public class LoginService {
     private String username;
     private String password;
     private String successInfo;
+    private String deviceId;
 
+    public static String getDeviceId() {
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--no-sandbox");
+        WebDriver driver = new ChromeDriver(chromeOptions);
+        driver.get("https://www.12306.cn/index/");
+        while(true){
+            Set<Cookie> cookies=driver.manage().getCookies();
+            for(Cookie cookie:cookies){
+                System.out.println(cookie.getName()+":"+cookie.getValue());
+                if("RAIL_DEVICEID".equals(cookie.getName())){
+                    System.out.println();
+                    driver.quit();
+                    return cookie.getValue();
+                }
+            }
+        }
+    }
     //判断当前是否登录
     public boolean checkUser() {
         JSONObject json = httpUtils.postJson(LoginConst.checkUser, Form.form().add("_json_att", "").build());
@@ -63,7 +89,7 @@ public class LoginService {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        post.addHeader("Cookie", "RAIL_DEVICEID=" + TrainConf.RAIL_DEVICEID);
+        post.addHeader("Cookie", "RAIL_DEVICEID=" + deviceId);
         JSONObject json = httpUtils.PostCus(post);
         int result_code = json.getInt("result_code");
         if (result_code == 0) {
