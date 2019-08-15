@@ -69,7 +69,7 @@ public class HttpUtils {
     }
 
     private void loadCookies(){
-        if(!cookiesFile.exists()){
+        if(cookiesFile==null||!cookiesFile.exists()){
             cookieStore=new BasicCookieStore();
             return;
         }

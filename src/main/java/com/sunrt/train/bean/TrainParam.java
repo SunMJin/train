@@ -14,7 +14,14 @@ public class TrainParam {
     public String to_sta_str;
     public String tour_flag="dc";
 
-    public TrainParam(String[] st, String trainDate, String from_sta, String to_sta, String trainType, int[] starttime, int[] arrTime, String from_sta_str, String to_sta_str) {
+    public String username;
+    public String password;
+    public String train_no;
+
+    public TrainParam(String username,String password,String train_no,String[] st, String trainDate, String from_sta, String to_sta, String trainType, int[] starttime, int[] arrTime, String from_sta_str, String to_sta_str) {
+        this.username=username;
+        this.password=password;
+        this.train_no=train_no;
         this.st = st;
         this.trainDate = trainDate;
         this.from_sta = from_sta;
@@ -24,5 +31,6 @@ public class TrainParam {
         this.arrTime = arrTime;
         this.from_sta_str = from_sta_str;
         this.to_sta_str = to_sta_str;
+
     }
 }

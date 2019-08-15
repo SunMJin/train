@@ -27,4 +27,12 @@ public class LoginResult {
     public void setMsg(String msg) {
         this.msg = msg;
     }
+
+    @Override
+    public String toString() {
+        return "LoginResult{" +
+                "isSuccess=" + isSuccess +
+                ", msg='" + msg + '\'' +
+                '}';
+    }
 }

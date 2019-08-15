@@ -1,52 +1,35 @@
 package com.sunrt.train.context;
 
-import com.sunrt.train.PublicHttp;
 import com.sunrt.train.constant.QueryTicketConstant;
-import com.sunrt.train.utils.FileUtils;
 import com.sunrt.train.utils.HttpUtils;
-import com.sunrt.train.utils.PropertiesUtil;
+import com.sunrt.train.utils.PublicHttp;
 import com.sunrt.train.utils.RegUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 public class Stations {
+
     private static HttpUtils httpUtils = PublicHttp.getInstance();
+    private static final String sta_ver_key="stations_version";
+    private static final String sta_key="stations_info";
 
-    private static String stations;
-    private static final String sta_filename ="stations.txt";
-    private static final String ver_filename ="ver.properties";
-    private static String sta_ver;
-    private static final String sta_ver_key="stations";
-
-    static{
-        System.out.println("正在更新站点...");
-        if(isNewVer()){
-            stations=updateStations();
-        }else{
-            String text=FileUtils.getText(sta_filename);
-            stations=RegUtils.getStrByReg("(?<=var station_names ='@).*(?=';)", text);
-        }
-        System.out.println("站点更新完毕");
+    public static String getLastStations(StringRedisTemplate stringRedisTemplate) {
+        return stringRedisTemplate.opsForValue().get(sta_key);
     }
 
-    public static String getCode(String name){
-        return RegUtils.getStrByReg("(?<=\\|"+name+"\\|)"+"[A-Z]+", stations);
-    }
-
-    private static String updateStations() {
-        String stationsStr = httpUtils.GetHtml(QueryTicketConstant.STATIONSURL+sta_ver);
-        FileUtils.writeText(sta_filename,stationsStr);
-        PropertiesUtil.writeValueByFile(ver_filename, sta_ver_key, sta_ver);
-        return stationsStr;
-    }
-
-    private static boolean isNewVer(){
+    public static boolean isLastVer(String client_ver_str,StringRedisTemplate stringRedisTemplate){
+        double client_ver=StringUtils.isNotEmpty(client_ver_str)?Double.valueOf(client_ver_str):0;
         String html = httpUtils.GetHtml(QueryTicketConstant.INIT);
-        sta_ver=RegUtils.getStrByReg("(?<=station_version=)[0-9]+([.][0-9]+)*", html);
-        double ver_new=Double.valueOf(sta_ver);
-        double ver_old=Double.valueOf(PropertiesUtil.getValueByFile(ver_filename,sta_ver_key));
-        if(ver_new>ver_old){
-            return true;
+        double x=Double.valueOf(RegUtils.getStrByReg("(?<=station_version=)[0-9]+([.][0-9]+)*", html));
+        String local_ver_str=stringRedisTemplate.opsForValue().get(sta_ver_key);
+        double last_ver= StringUtils.isEmpty(local_ver_str)?0:Double.valueOf(local_ver_str);
+        if(x!=last_ver){
+            html = httpUtils.GetHtml(QueryTicketConstant.STATIONSURL+x);
+            String stastr=RegUtils.getStrByReg("(?<=var station_names ='@).*(?=';)", html);
+            stringRedisTemplate.opsForValue().set(sta_key, stastr);
         }
-        return false;
+        stringRedisTemplate.opsForValue().set(sta_ver_key,String.valueOf(x));
+        return client_ver!=x;
     }
-
 }

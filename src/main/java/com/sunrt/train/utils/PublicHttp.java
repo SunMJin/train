@@ -1,6 +1,4 @@
-package com.sunrt.train;
-
-import com.sunrt.train.utils.HttpUtils;
+package com.sunrt.train.utils;
 
 public class PublicHttp {
     private static HttpUtils httpUtils=new HttpUtils();
