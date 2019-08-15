@@ -1,6 +1,6 @@
 package com.sunrt.train.context;
 
-import com.sunrt.train.TrainHttp;
+import com.sunrt.train.PublicHttp;
 import com.sunrt.train.constant.QueryTicketConstant;
 import com.sunrt.train.utils.FileUtils;
 import com.sunrt.train.utils.HttpUtils;
@@ -8,7 +8,7 @@ import com.sunrt.train.utils.PropertiesUtil;
 import com.sunrt.train.utils.RegUtils;
 
 public class Stations {
-    private static HttpUtils httpUtils = TrainHttp.getInstance();
+    private static HttpUtils httpUtils = PublicHttp.getInstance();
 
     private static String stations;
     private static final String sta_filename ="stations.txt";

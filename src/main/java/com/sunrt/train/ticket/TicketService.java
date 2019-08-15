@@ -1,10 +1,9 @@
 package com.sunrt.train.ticket;
 
-import com.sunrt.train.TrainHttp;
 import com.sunrt.train.bean.Cp;
 import com.sunrt.train.bean.Cr;
 import com.sunrt.train.bean.OrderInfo;
-import com.sunrt.train.bean.Param;
+import com.sunrt.train.bean.TrainParam;
 import com.sunrt.train.conf.TrainConf;
 import com.sunrt.train.constant.QueryTicketConstant;
 import com.sunrt.train.context.Context;
@@ -19,18 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TicketService {
-    private static HttpUtils httpUtils= TrainHttp.getInstance();
-    private static TicketService ticketService;
-    private TicketService() {}
-    public static TicketService getInstance() {
-        if (ticketService == null) {
-            ticketService = new TicketService();
-        }
-        return ticketService;
-    }
-    private LoginService login = LoginService.getInstance();
+    private HttpUtils httpUtils;
+    private LoginService loginService;
 
-    public void start(Param param) {
+    private TicketService() {}
+    public TicketService(HttpUtils httpUtils, LoginService loginService) {
+        this.httpUtils = httpUtils;
+        this.loginService = loginService;
+        this.reservation=new Reservation(httpUtils,null);
+    }
+    private Reservation reservation;
+    public void start(TrainParam param) {
         List<Cr> list = searchTickets(param);
         if (list == null || list.size() == 0) {
             System.out.println("没有搜索到车票或查询失败！");
@@ -45,23 +43,23 @@ public class TicketService {
         //根据优先级决定购买的车次
         Cr cr = SelectTickets.orderTicket(list, param);
         //是否登录
-        if (!login.checkUser()) {
+        if (!loginService.checkUser()) {
             System.out.println("未登录");
             return;
         }
         //是否存在未完成订单
-        if (!Reservation.submitOrderRequest(cr, param)) {
+        if (!reservation.submitOrderRequest(cr, param)) {
             System.out.println("存在未完成订单！");
             return;
         }
-        Context context=new Context(param,cr);
+        Context context=new Context(param,cr,reservation);
         List<OrderInfo> plist=context.getOrderInfos();
         for(OrderInfo orderInfo:plist){
             buy(orderInfo);
         }
     }
 
-    public static List<Cr> searchTickets(Param p) {
+    public List<Cr> searchTickets(TrainParam p) {
         if(p==null){
             throw new NullPointerException();
         }
@@ -129,8 +127,8 @@ public class TicketService {
         return cN;
     }
 
-    public static void buy(OrderInfo orderInfo) {
-        Reservation reservation=new Reservation(orderInfo);
+    public void buy(OrderInfo orderInfo) {
+        reservation.setOrderInfo(orderInfo);
         JSONObject checkOrderInfoJson = reservation.checkOrderInfo();
         if (checkOrderInfoJson.getBoolean("status")) {
             JSONObject checkOrderInfoJsonData = checkOrderInfoJson.getJSONObject("data");

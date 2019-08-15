@@ -2,9 +2,9 @@ package com.sunrt.train.context;
 
 import com.sunrt.train.bean.Cr;
 import com.sunrt.train.bean.OrderInfo;
+import com.sunrt.train.bean.TrainParam;
 import com.sunrt.train.conf.TrainConf;
 import com.sunrt.train.ticket.Constant;
-import com.sunrt.train.bean.Param;
 import com.sunrt.train.ticket.Reservation;
 import com.sunrt.train.utils.RegUtils;
 import org.json.JSONArray;
@@ -14,16 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Context {
-    private Param param;
+    private TrainParam param;
     private String html;
     private Cr cr;
-    public Context(Param param,Cr cr) {
+    Reservation reservation;
+    public Context(TrainParam param, Cr cr, Reservation reservation) {
         this.param=param;
+        this.reservation=reservation;
         this.cr=cr;
         if (param.tour_flag.equals(Constant.DC)) {
-            html = Reservation.initC(Constant.DC);
+            html = reservation.initC(Constant.DC);
         } else if (param.tour_flag.equals(Constant.WC)) {
-            html = Reservation.initC(Constant.WC);
+            html = reservation.initC(Constant.WC);
         }
         globalRepeatSubmitToken=getGlobalRepeatSubmitToken();
         ticketInfoForPassengerForm = RegUtils.getJSONByReg("(?<=ticketInfoForPassengerForm=).*(?=;)", html);
@@ -60,7 +62,7 @@ public class Context {
     }
 
     private JSONArray get_normal_passengers(){
-        JSONObject passengerJson = Reservation.getPassengerDTOs(globalRepeatSubmitToken);
+        JSONObject passengerJson = reservation.getPassengerDTOs(globalRepeatSubmitToken);
         boolean passengerStatus = passengerJson.getBoolean("status");
         if (passengerStatus) {
             return passengerJson.getJSONObject("data").getJSONArray("normal_passengers");

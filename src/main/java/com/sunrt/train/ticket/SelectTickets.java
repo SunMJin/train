@@ -2,7 +2,7 @@ package com.sunrt.train.ticket;
 
 import com.sunrt.train.bean.Cp;
 import com.sunrt.train.bean.Cr;
-import com.sunrt.train.bean.Param;
+import com.sunrt.train.bean.TrainParam;
 import com.sunrt.train.context.Proority;
 import com.sunrt.train.context.Seats;
 import com.sunrt.train.utils.CharUtils;
@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class SelectTickets {
-    public static List<Cr> retrieve(List<Cr> list, Param p){
+    public static List<Cr> retrieve(List<Cr> list, TrainParam p){
         if(list==null||p==null){
             throw new NullPointerException();
         }
@@ -55,7 +55,7 @@ public class SelectTickets {
         return list;
     }
 
-    public static Cr orderTicket(List<Cr> list,Param p){
+    public static Cr orderTicket(List<Cr> list, TrainParam p){
         if(list==null||list.size()==0||p==null){
             throw new NullPointerException();
         }

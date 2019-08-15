@@ -1,9 +1,8 @@
 package com.sunrt.train.ticket;
 
-import com.sunrt.train.TrainHttp;
 import com.sunrt.train.bean.Cr;
 import com.sunrt.train.bean.OrderInfo;
-import com.sunrt.train.bean.Param;
+import com.sunrt.train.bean.TrainParam;
 import com.sunrt.train.utils.DateUtils;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.http.NameValuePair;
@@ -18,16 +17,19 @@ import java.util.List;
 
 
 public class Reservation {
-
-
-    private static HttpUtils httpUtils= TrainHttp.getInstance();
-
+    private HttpUtils httpUtils;
     private OrderInfo orderInfo;
-    public Reservation(OrderInfo orderInfo){
-        this.orderInfo=orderInfo;
+
+    public void setOrderInfo(OrderInfo orderInfo) {
+        this.orderInfo = orderInfo;
     }
 
-    public static String initC(String type) {
+    public Reservation(HttpUtils httpUtils, OrderInfo orderInfo) {
+        this.httpUtils = httpUtils;
+        this.orderInfo = orderInfo;
+    }
+
+    public String initC(String type) {
         List<NameValuePair> lp= Form.form().add("_json_att", "").build();
         String url=null;
         if(type.equals(Constant.DC)){
@@ -38,13 +40,13 @@ public class Reservation {
         return httpUtils.postHtml(url,lp);
     }
 
-    public static JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN) {
+    public JSONObject getPassengerDTOs(String REPEAT_SUBMIT_TOKEN) {
         return httpUtils.postJson(Constant.PASSENGERURL, Form.form()
                 .add("_json_att", "")
                 .add("REPEAT_SUBMIT_TOKEN", REPEAT_SUBMIT_TOKEN).build());
     }
 
-    public static boolean submitOrderRequest(Cr cr, Param p) {
+    public boolean submitOrderRequest(Cr cr, TrainParam p) {
         JSONObject json;
         try {
             json= httpUtils.postJson(Constant.submitOrderRequest,Form.form()

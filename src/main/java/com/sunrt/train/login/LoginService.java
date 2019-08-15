@@ -1,9 +1,10 @@
 package com.sunrt.train.login;
 
-import com.sunrt.train.TrainHttp;
-import com.sunrt.train.constant.LoginConst;
+import com.sunrt.train.bean.LoginResult;
 import com.sunrt.train.conf.TrainConf;
+import com.sunrt.train.constant.LoginConst;
 import com.sunrt.train.utils.HttpUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.fluent.Form;
@@ -20,19 +21,14 @@ import java.util.List;
 import java.util.Set;
 
 public class LoginService {
-    private static LoginService loginService;
-    private LoginService(){};
-    public static LoginService getInstance(){
-        if(loginService==null){
-            loginService=new LoginService();
-        }
-        return loginService;
+    public LoginService(HttpUtils httpUtils) {
+        this.httpUtils = httpUtils;
+        this.captchaService= new CaptchaService(httpUtils);
     }
-    private HttpUtils httpUtils = TrainHttp.getInstance();
-    private CaptchaService captchaService = CaptchaService.getInstance();
+    private HttpUtils httpUtils;
+    private CaptchaService captchaService;
     private String username;
     private String password;
-    private String successInfo;
 
     public static String getDeviceId() {
         ChromeOptions chromeOptions = new ChromeOptions();
@@ -58,21 +54,31 @@ public class LoginService {
         return json.getJSONObject("data").getBoolean("flag");
     }
 
-    public String login(String username, String password) {
+    public LoginResult login(String username, String password) {
         this.username = username;
         this.password = password;
-        while (true) {
-            String ranCode = captchaService.getcode();
-            if (captchaService.checkPassCode(ranCode)) {
-                if (loginForUam(ranCode)) {
-                    httpUtils.saveCookies();
-                    return successInfo;
+        if(!checkUser()){
+            if(captchaService.conn(TrainConf.captchaHost,TrainConf.captchaPort)){
+            }else{
+                return new LoginResult(false,"服务异常，请联系管理员！");
+            }
+            while (true) {
+                String ranCode = captchaService.getcode();
+                if (captchaService.checkPassCode(ranCode)) {
+                    LoginResult result=loginForUam(ranCode);
+                    if(result.isSuccess()){
+                        httpUtils.saveCookies();
+                    }
+                    return result;
                 }
             }
+        }else{
+            return new LoginResult(true,"账号已登录！");
         }
     }
 
-    public boolean loginForUam(String randCode) {
+    public LoginResult loginForUam(String randCode) {
+        LoginResult loginResult=new LoginResult(false,"登录失败，请检查用户名或密码！");
         List<NameValuePair> listParams = Form.form()
                 .add("username", username)
                 .add("password", password)
@@ -87,6 +93,10 @@ public class LoginService {
         }
         post.addHeader("Cookie", "RAIL_DEVICEID=" + getDeviceId());
         JSONObject json = httpUtils.PostCus(post);
+        if(json==null||json.toString().length()==0){
+            loginResult.setMsg("该账号被限制登录，请稍后再试！");
+            return loginResult;
+        }
         int result_code = json.getInt("result_code");
         if (result_code == 0) {
             httpUtils.postHtml(LoginConst.userLogin, null);
@@ -99,12 +109,13 @@ public class LoginService {
                 if (tkJson.getInt("result_code") == 0) {
                     JSONObject ucJson = httpUtils.postJson(LoginConst.uamauthclient, Form.form().add("tk", tkJson.getString("newapptk")).build());
                     if (ucJson.getInt("result_code") == 0) {
-                        successInfo = ucJson.toString();
-                        return true;
+                        loginResult.setSuccess(true);
+                        loginResult.setMsg(ucJson.toString());
+                        return loginResult;
                     }
                 }
             }
         }
-        return false;
+        return loginResult;
     }
 }

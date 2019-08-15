@@ -1,8 +1,7 @@
 package com.sunrt.train.login;
 
-import com.sunrt.train.TrainHttp;
-import com.sunrt.train.constant.LoginConst;
 import com.sunrt.train.conf.TrainConf;
+import com.sunrt.train.constant.LoginConst;
 import com.sunrt.train.utils.HttpUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
@@ -16,19 +15,10 @@ import java.util.Date;
 
 
 public class CaptchaService {
-
-    private CaptchaService(){}
-    private static CaptchaService captchaService;
-
-    public static CaptchaService getInstance(){
-        if(captchaService==null){
-            captchaService=new CaptchaService();
-        }
-        return captchaService;
+    public CaptchaService(HttpUtils httpUtils) {
+        this.httpUtils = httpUtils;
     }
-
-    private HttpUtils httpUtils=TrainHttp.getInstance();
-
+    private HttpUtils httpUtils;
     private Socket socket;
     private BufferedWriter bw;
     private BufferedReader br;

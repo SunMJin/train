@@ -6,7 +6,7 @@ import com.sunrt.train.login.LoginService;
 
 public class Application {
     public static void main(String[] args) {
-        LoginService loginService=LoginService.getInstance();
+        /*LoginService loginService=LoginService.getInstance();
         if(!loginService.checkUser()){
             CaptchaService captchaService= CaptchaService.getInstance();
             System.out.println("正在连接验证码识别服务...");
@@ -21,10 +21,10 @@ public class Application {
             System.out.println(loginInfo);
         }
         if(loginService.checkUser())
-            System.out.println("登录成功！");
+            System.out.println("登录成功！");*/
         /*System.out.println("开始购票...");
         TicketService ticketService=TicketService.getInstance();
-        ticketService.start(new Param(TrainConf.seatType,
+        ticketService.start(new TrainParam(TrainConf.seatType,
                 TrainConf.trainDate,Stations.getCode(TrainConf.fromSta), Stations.getCode(TrainConf.toSta),
                 TrainConf.trainType,TrainConf.starttime, TrainConf.arrTime,TrainConf.fromSta,TrainConf.toSta));*/
     }

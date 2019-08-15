@@ -43,9 +43,13 @@ public class HttpUtils {
     }
     private CookieStore cookieStore;
     private boolean isProxyByFiddle;
-    public final static File cookiesFile= new File("cookies");
+    private File cookiesFile;
 
     public HttpUtils(){
+        httpclient=buildHttpClient();
+    }
+    public HttpUtils(String file){
+        this.cookiesFile=new File(file);
         httpclient=buildHttpClient();
     }
 
