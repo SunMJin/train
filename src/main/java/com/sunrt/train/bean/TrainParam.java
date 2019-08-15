@@ -7,7 +7,7 @@ public class TrainParam {
     public String to_sta;
     public String purpose_codes="ADULT";
 
-    public String trainType;
+    public String trainType[];
     public int[] starttime;
     public int[] arrTime;
     public String from_sta_str;
@@ -16,12 +16,10 @@ public class TrainParam {
 
     public String username;
     public String password;
-    public String train_no;
 
-    public TrainParam(String username,String password,String train_no,String[] st, String trainDate, String from_sta, String to_sta, String trainType, int[] starttime, int[] arrTime, String from_sta_str, String to_sta_str) {
+    public TrainParam(String username,String password,String[] st, String trainDate, String from_sta, String to_sta, String trainType[], int[] starttime, int[] arrTime, String from_sta_str, String to_sta_str) {
         this.username=username;
         this.password=password;
-        this.train_no=train_no;
         this.st = st;
         this.trainDate = trainDate;
         this.from_sta = from_sta;
